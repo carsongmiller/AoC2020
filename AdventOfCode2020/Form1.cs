@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace AdventOfCode2020
 {
@@ -20,6 +21,14 @@ namespace AdventOfCode2020
 		private void btnApplyFilepath_Click(object sender, EventArgs e)
 		{
 			inputPath = tbInputPath.Text;
+		}
+
+		private string[] getInput(string filename, string[] delimeters = null)
+		{
+			if (delimeters is null) delimeters = new string[2] { "\n", "\r\n"};
+
+			string input = File.ReadAllText(inputPath + filename);
+			return input.Trim().Split(delimeters, StringSplitOptions.None);
 		}
 
 		private void btnDay1_Click(object sender, EventArgs e)
@@ -417,28 +426,252 @@ namespace AdventOfCode2020
 				.Select(x => x.Split('\n').Aggregate((a, b) => new string(a.Intersect(b).ToArray())))
 				.Sum(x => x.Length);
 
-			//the code below works too.  Above is just cooler
-
-			//foreach (string str in inputSplit)
-			//{
-			//	string[] personSplit = Regex.Split(str, "\n");
-			//	bool[] aggregate = Enumerable.Repeat(true, 26).ToArray();
-
-			//	for (int i = 0; i < personSplit.Length; i++)
-			//	{
-			//		bool[] answers = new bool[26];
-			//		foreach (byte b in Encoding.UTF8.GetBytes(personSplit[i].ToCharArray()))
-			//		{
-			//			answers[b - 97] = true;
-			//		}
-
-			//		for (int j = 0; j < 26; j++) { aggregate[j] &= answers[j]; }
-			//	}
-
-			//	totalCount += aggregate.Where(c => c).Count();
-			//}
-
 			Console.WriteLine("Part 2: " + totalCount);
+		}
+
+		private void btnDay7_Click(object sender, EventArgs e)
+		{
+			string[] inputSplit = getInput("input7.txt");
+			Dictionary<string, List<bagRule>> dict = new Dictionary<string, List<bagRule>>();
+
+			foreach (string line in inputSplit)
+			{
+				//string newLine = line.Trim('.');
+				string[] splitLine = line.Split(new string[] { " bags contain ", " bags, ", " bag, ", "bag.", "bags." }, StringSplitOptions.None);
+
+				List<bagRule> rules = new List<bagRule>();
+				if (splitLine[0].Contains("drab tomato"))
+				{
+
+				}
+				splitLine.ToList().ForEach(x => { if(Regex.Match(x, "\\d").Success) rules.Add(new bagRule(x)); });
+				dict.Add(splitLine[0], rules);
+				//values with count = 0 are terminal cases
+			}
+
+
+			//Part 1
+			int count = 0;
+			dict.Keys.ToList().ForEach(x => count += day7CountPart1("shiny gold", x, dict) > 0 ? 1 : 0);
+
+			//sub 1 from count to ignore the key for our gold bag itself
+			Console.WriteLine("Part 1: " + (count - 1));
+
+			//Part 2
+			count = day7CountPart2("shiny gold", dict);
+			Console.WriteLine("Part 2: " + (count - 1));
+		}
+
+
+
+		private int day7CountPart1 (string target, string current, Dictionary<string, List<bagRule>> dict)
+		{
+			int localCount = 0;
+			if (dict[current].Count == 0) return 0;
+			else if (current == target) return 1;
+			else
+			{
+				foreach (bagRule rule in dict[current])
+				{
+					localCount += day7CountPart1(target, rule.type, dict);
+				}
+			}
+			return localCount;
+		}
+
+		/// <summary>
+		/// Finds total number of bags contained within (and including) the root bag
+		/// </summary>
+		/// <param name="root">current root of the tree</param>
+		/// <param name="dict">dictionary to traverse</param>
+		/// <returns>Bags contained within current bag's subtree, including current bag</returns>
+		private int day7CountPart2(string root, Dictionary<string, List<bagRule>> dict)
+		{
+			int localCount = 0;
+			if (dict[root].Count == 0) return 1;
+			else
+			{
+				foreach (bagRule rule in dict[root])
+				{
+					localCount += rule.quant * day7CountPart2(rule.type, dict);
+				}
+			}
+			return 1 + localCount;
+		}
+
+		private struct bagRule
+		{
+			public string type;
+			public int quant;
+
+			public bagRule(string t, int q)
+			{
+				type = t;
+				quant = q;
+			}
+
+			public bagRule(string s)
+			{
+				quant = int.Parse(s.Substring(0, 1));
+				type = s.Substring(2).Trim();
+			}
+		}
+
+		private void btnDay8_Click(object sender, EventArgs e)
+		{
+			string[] inputSplit = getInput("input8.txt");
+			Processor p = new Processor(inputSplit);
+
+			
+			//Part 1
+			while (!p.nextStepRepeat)
+			{
+				p.Step();
+			}
+
+			Console.WriteLine("Part 1: " + p.accumulator);
+
+			//Part 2
+
+			int acc = -1;
+
+			for (int i = 0; i < p.instructions.Count; i++)
+			{
+				p.Reset();
+				if (p.instructions[i].type == Processor.Instruction.InstructionType.jmp)
+				{
+					Processor.Instruction newInst = new Processor.Instruction();
+					Processor.Instruction lastInst = p.instructions[i];
+					newInst.type = Processor.Instruction.InstructionType.nop;
+					newInst.value = p.instructions[i].value;
+					p.instructions[i] = newInst;
+
+					acc = p.Run();
+					if (acc >= 0)
+					{
+						break;
+					}
+					else p.instructions[i] = lastInst; //return the instruction to prev value
+				}
+				else if (p.instructions[i].type == Processor.Instruction.InstructionType.nop)
+				{
+					Processor.Instruction newInst = new Processor.Instruction();
+					Processor.Instruction lastInst = p.instructions[i];
+					newInst.type = Processor.Instruction.InstructionType.jmp;
+					newInst.value = p.instructions[i].value;
+					p.instructions[i] = newInst;
+
+					acc = p.Run();
+					if (acc >= 0)
+					{
+						break;
+					}
+					else p.instructions[i] = lastInst;
+				}
+			}
+			Console.WriteLine("Part 2: " + acc);
+		}
+
+		private void btnDay9_Click(object sender, EventArgs e)
+		{
+			string[] inputSplit = getInput("input9.txt");
+
+			//Part 1
+			int bad = -1;
+			for (int i = 25; i < inputSplit.Length; i++)
+			{
+				int current = int.Parse(inputSplit[i]);
+				var combinations = from item1 in inputSplit.Skip(i - 25).Take(25)
+								   from item2 in inputSplit.Skip(i - 25).Take(25)
+								   where
+								   (int.Parse(item1) + int.Parse(item2) == current) &&
+								   (int.Parse(item1) != int.Parse(item2))
+								   select Tuple.Create(int.Parse(item1), int.Parse(item2));
+
+				if (combinations.Count() == 0)
+				{
+					bad = current;
+					Console.WriteLine("Part 1: " + current);
+					break;
+				}
+			}
+
+			//Part 2
+			long[] list = Array.ConvertAll(inputSplit, s => long.Parse(s));
+
+			bool found = false;
+			for (int i = 0; i < list.Length; i++)
+			{
+				for (int j = 2; j < list.Length - i; j++)
+				{
+					long[] sublist = list.Skip(i).Take(j).ToArray();
+					long sum = sublist.Sum();
+					if (sum == bad)
+					{
+						Console.WriteLine("Part 2: " + (sublist.Max() + sublist.Min()));
+						found = true;
+						break;
+					}
+					else if (sum > bad) break;
+				}
+				if (found) break;
+			}
+		}
+
+		private void btnDay10_Click(object sender, EventArgs e)
+		{
+			int[] input = Array.ConvertAll(getInput("input10.txt"), s => int.Parse(s));
+
+
+			//Part 1
+			input = input.Concat(new int[] { 0, input.Max() + 3 }).ToArray();
+			Array.Sort(input);
+			int oneCount = 0;
+			int twoCount = 0;
+			int threeCount = 0;
+			for (int i = 1; i < input.Length; i++)
+			{
+				if (input[i] - input[i - 1] == 1) oneCount++;
+				else if (input[i] - input[i - 1] == 2) twoCount++;
+				else if (input[i] - input[i - 1] == 3) threeCount++;
+			}
+			Console.WriteLine("Part 1: " + (oneCount * threeCount));
+
+
+			//Part 2
+			List<List<int>> chunks = new List<List<int>>();
+			int lastBreak = -1;
+			for (int i = 0; i < input.Length - 1; i++)
+			{
+				if (input[i + 1] - input[i] == 3)
+				{
+					chunks.Add(input.Skip(lastBreak + 1).Take(i - lastBreak).ToList());
+					lastBreak = i;
+				}
+			}
+			chunks.Add(input.Skip(lastBreak + 1).Take(input.Length - 1 - lastBreak).ToList());
+
+			long combos = 1;
+			foreach (List<int> chunk in chunks)
+			{
+				switch (chunk.Count())
+				{
+					case 5:
+						combos *= 7;
+						break;
+					case 4:
+						combos *= 4;
+						break;
+					case 3:
+						combos *= 2;
+						break;
+					case 2:
+					case 1:
+					default:
+						break;
+				}
+			}
+			Console.WriteLine("Part 2: " + combos);
 		}
 	}
 

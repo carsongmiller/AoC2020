@@ -37,6 +37,10 @@ namespace AdventOfCode2020
 			this.btnDay4 = new System.Windows.Forms.Button();
 			this.btnDay5 = new System.Windows.Forms.Button();
 			this.btnDay6 = new System.Windows.Forms.Button();
+			this.btnDay7 = new System.Windows.Forms.Button();
+			this.btnDay8 = new System.Windows.Forms.Button();
+			this.btnDay9 = new System.Windows.Forms.Button();
+			this.btnDay10 = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnDay1
@@ -117,11 +121,55 @@ namespace AdventOfCode2020
 			this.btnDay6.UseVisualStyleBackColor = true;
 			this.btnDay6.Click += new System.EventHandler(this.btnDay6_Click);
 			// 
+			// btnDay7
+			// 
+			this.btnDay7.Location = new System.Drawing.Point(43, 377);
+			this.btnDay7.Name = "btnDay7";
+			this.btnDay7.Size = new System.Drawing.Size(109, 38);
+			this.btnDay7.TabIndex = 8;
+			this.btnDay7.Text = "7";
+			this.btnDay7.UseVisualStyleBackColor = true;
+			this.btnDay7.Click += new System.EventHandler(this.btnDay7_Click);
+			// 
+			// btnDay8
+			// 
+			this.btnDay8.Location = new System.Drawing.Point(43, 421);
+			this.btnDay8.Name = "btnDay8";
+			this.btnDay8.Size = new System.Drawing.Size(109, 38);
+			this.btnDay8.TabIndex = 9;
+			this.btnDay8.Text = "8";
+			this.btnDay8.UseVisualStyleBackColor = true;
+			this.btnDay8.Click += new System.EventHandler(this.btnDay8_Click);
+			// 
+			// btnDay9
+			// 
+			this.btnDay9.Location = new System.Drawing.Point(43, 465);
+			this.btnDay9.Name = "btnDay9";
+			this.btnDay9.Size = new System.Drawing.Size(109, 38);
+			this.btnDay9.TabIndex = 10;
+			this.btnDay9.Text = "9";
+			this.btnDay9.UseVisualStyleBackColor = true;
+			this.btnDay9.Click += new System.EventHandler(this.btnDay9_Click);
+			// 
+			// btnDay10
+			// 
+			this.btnDay10.Location = new System.Drawing.Point(43, 509);
+			this.btnDay10.Name = "btnDay10";
+			this.btnDay10.Size = new System.Drawing.Size(109, 38);
+			this.btnDay10.TabIndex = 11;
+			this.btnDay10.Text = "10";
+			this.btnDay10.UseVisualStyleBackColor = true;
+			this.btnDay10.Click += new System.EventHandler(this.btnDay10_Click);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1217, 783);
+			this.Controls.Add(this.btnDay10);
+			this.Controls.Add(this.btnDay9);
+			this.Controls.Add(this.btnDay8);
+			this.Controls.Add(this.btnDay7);
 			this.Controls.Add(this.btnDay6);
 			this.Controls.Add(this.btnDay5);
 			this.Controls.Add(this.btnDay4);
@@ -147,6 +195,10 @@ namespace AdventOfCode2020
 		private System.Windows.Forms.Button btnDay4;
 		private System.Windows.Forms.Button btnDay5;
 		private System.Windows.Forms.Button btnDay6;
+		private System.Windows.Forms.Button btnDay7;
+		private System.Windows.Forms.Button btnDay8;
+		private System.Windows.Forms.Button btnDay9;
+		private System.Windows.Forms.Button btnDay10;
 	}
 }
 
