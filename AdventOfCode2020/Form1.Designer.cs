@@ -41,6 +41,21 @@ namespace AdventOfCode2020
 			this.btnDay8 = new System.Windows.Forms.Button();
 			this.btnDay9 = new System.Windows.Forms.Button();
 			this.btnDay10 = new System.Windows.Forms.Button();
+			this.btnDay11 = new System.Windows.Forms.Button();
+			this.btnDay13 = new System.Windows.Forms.Button();
+			this.btnDay12 = new System.Windows.Forms.Button();
+			this.btnDay14 = new System.Windows.Forms.Button();
+			this.btnDay15 = new System.Windows.Forms.Button();
+			this.btnDay25 = new System.Windows.Forms.Button();
+			this.btnDay24 = new System.Windows.Forms.Button();
+			this.btnDay23 = new System.Windows.Forms.Button();
+			this.btnDay22 = new System.Windows.Forms.Button();
+			this.btnDay21 = new System.Windows.Forms.Button();
+			this.btnDay20 = new System.Windows.Forms.Button();
+			this.btnDay19 = new System.Windows.Forms.Button();
+			this.btnDay18 = new System.Windows.Forms.Button();
+			this.btnDay17 = new System.Windows.Forms.Button();
+			this.btnDay16 = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnDay1
@@ -161,11 +176,162 @@ namespace AdventOfCode2020
 			this.btnDay10.UseVisualStyleBackColor = true;
 			this.btnDay10.Click += new System.EventHandler(this.btnDay10_Click);
 			// 
+			// btnDay11
+			// 
+			this.btnDay11.Location = new System.Drawing.Point(43, 553);
+			this.btnDay11.Name = "btnDay11";
+			this.btnDay11.Size = new System.Drawing.Size(109, 38);
+			this.btnDay11.TabIndex = 12;
+			this.btnDay11.Text = "11";
+			this.btnDay11.UseVisualStyleBackColor = true;
+			this.btnDay11.Click += new System.EventHandler(this.btnDay11_Click);
+			// 
+			// btnDay13
+			// 
+			this.btnDay13.Location = new System.Drawing.Point(43, 641);
+			this.btnDay13.Name = "btnDay13";
+			this.btnDay13.Size = new System.Drawing.Size(109, 38);
+			this.btnDay13.TabIndex = 13;
+			this.btnDay13.Text = "13";
+			this.btnDay13.UseVisualStyleBackColor = true;
+			// 
+			// btnDay12
+			// 
+			this.btnDay12.Location = new System.Drawing.Point(43, 597);
+			this.btnDay12.Name = "btnDay12";
+			this.btnDay12.Size = new System.Drawing.Size(109, 38);
+			this.btnDay12.TabIndex = 14;
+			this.btnDay12.Text = "12";
+			this.btnDay12.UseVisualStyleBackColor = true;
+			// 
+			// btnDay14
+			// 
+			this.btnDay14.Location = new System.Drawing.Point(158, 113);
+			this.btnDay14.Name = "btnDay14";
+			this.btnDay14.Size = new System.Drawing.Size(109, 38);
+			this.btnDay14.TabIndex = 15;
+			this.btnDay14.Text = "14";
+			this.btnDay14.UseVisualStyleBackColor = true;
+			// 
+			// btnDay15
+			// 
+			this.btnDay15.Location = new System.Drawing.Point(158, 157);
+			this.btnDay15.Name = "btnDay15";
+			this.btnDay15.Size = new System.Drawing.Size(109, 38);
+			this.btnDay15.TabIndex = 16;
+			this.btnDay15.Text = "15";
+			this.btnDay15.UseVisualStyleBackColor = true;
+			// 
+			// btnDay25
+			// 
+			this.btnDay25.Location = new System.Drawing.Point(158, 597);
+			this.btnDay25.Name = "btnDay25";
+			this.btnDay25.Size = new System.Drawing.Size(109, 38);
+			this.btnDay25.TabIndex = 27;
+			this.btnDay25.Text = "25";
+			this.btnDay25.UseVisualStyleBackColor = true;
+			// 
+			// btnDay24
+			// 
+			this.btnDay24.Location = new System.Drawing.Point(158, 553);
+			this.btnDay24.Name = "btnDay24";
+			this.btnDay24.Size = new System.Drawing.Size(109, 38);
+			this.btnDay24.TabIndex = 25;
+			this.btnDay24.Text = "24";
+			this.btnDay24.UseVisualStyleBackColor = true;
+			// 
+			// btnDay23
+			// 
+			this.btnDay23.Location = new System.Drawing.Point(158, 509);
+			this.btnDay23.Name = "btnDay23";
+			this.btnDay23.Size = new System.Drawing.Size(109, 38);
+			this.btnDay23.TabIndex = 24;
+			this.btnDay23.Text = "23";
+			this.btnDay23.UseVisualStyleBackColor = true;
+			// 
+			// btnDay22
+			// 
+			this.btnDay22.Location = new System.Drawing.Point(158, 465);
+			this.btnDay22.Name = "btnDay22";
+			this.btnDay22.Size = new System.Drawing.Size(109, 38);
+			this.btnDay22.TabIndex = 23;
+			this.btnDay22.Text = "22";
+			this.btnDay22.UseVisualStyleBackColor = true;
+			// 
+			// btnDay21
+			// 
+			this.btnDay21.Location = new System.Drawing.Point(158, 421);
+			this.btnDay21.Name = "btnDay21";
+			this.btnDay21.Size = new System.Drawing.Size(109, 38);
+			this.btnDay21.TabIndex = 22;
+			this.btnDay21.Text = "21";
+			this.btnDay21.UseVisualStyleBackColor = true;
+			// 
+			// btnDay20
+			// 
+			this.btnDay20.Location = new System.Drawing.Point(158, 377);
+			this.btnDay20.Name = "btnDay20";
+			this.btnDay20.Size = new System.Drawing.Size(109, 38);
+			this.btnDay20.TabIndex = 21;
+			this.btnDay20.Text = "20";
+			this.btnDay20.UseVisualStyleBackColor = true;
+			// 
+			// btnDay19
+			// 
+			this.btnDay19.Location = new System.Drawing.Point(158, 333);
+			this.btnDay19.Name = "btnDay19";
+			this.btnDay19.Size = new System.Drawing.Size(109, 38);
+			this.btnDay19.TabIndex = 20;
+			this.btnDay19.Text = "19";
+			this.btnDay19.UseVisualStyleBackColor = true;
+			// 
+			// btnDay18
+			// 
+			this.btnDay18.Location = new System.Drawing.Point(158, 289);
+			this.btnDay18.Name = "btnDay18";
+			this.btnDay18.Size = new System.Drawing.Size(109, 38);
+			this.btnDay18.TabIndex = 19;
+			this.btnDay18.Text = "18";
+			this.btnDay18.UseVisualStyleBackColor = true;
+			// 
+			// btnDay17
+			// 
+			this.btnDay17.Location = new System.Drawing.Point(158, 245);
+			this.btnDay17.Name = "btnDay17";
+			this.btnDay17.Size = new System.Drawing.Size(109, 38);
+			this.btnDay17.TabIndex = 18;
+			this.btnDay17.Text = "17";
+			this.btnDay17.UseVisualStyleBackColor = true;
+			// 
+			// btnDay16
+			// 
+			this.btnDay16.Location = new System.Drawing.Point(158, 201);
+			this.btnDay16.Name = "btnDay16";
+			this.btnDay16.Size = new System.Drawing.Size(109, 38);
+			this.btnDay16.TabIndex = 17;
+			this.btnDay16.Text = "16";
+			this.btnDay16.UseVisualStyleBackColor = true;
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1217, 783);
+			this.Controls.Add(this.btnDay25);
+			this.Controls.Add(this.btnDay24);
+			this.Controls.Add(this.btnDay23);
+			this.Controls.Add(this.btnDay22);
+			this.Controls.Add(this.btnDay21);
+			this.Controls.Add(this.btnDay20);
+			this.Controls.Add(this.btnDay19);
+			this.Controls.Add(this.btnDay18);
+			this.Controls.Add(this.btnDay17);
+			this.Controls.Add(this.btnDay16);
+			this.Controls.Add(this.btnDay15);
+			this.Controls.Add(this.btnDay14);
+			this.Controls.Add(this.btnDay12);
+			this.Controls.Add(this.btnDay13);
+			this.Controls.Add(this.btnDay11);
 			this.Controls.Add(this.btnDay10);
 			this.Controls.Add(this.btnDay9);
 			this.Controls.Add(this.btnDay8);
@@ -199,6 +365,21 @@ namespace AdventOfCode2020
 		private System.Windows.Forms.Button btnDay8;
 		private System.Windows.Forms.Button btnDay9;
 		private System.Windows.Forms.Button btnDay10;
+		private System.Windows.Forms.Button btnDay11;
+		private System.Windows.Forms.Button btnDay13;
+		private System.Windows.Forms.Button btnDay12;
+		private System.Windows.Forms.Button btnDay14;
+		private System.Windows.Forms.Button btnDay15;
+		private System.Windows.Forms.Button btnDay25;
+		private System.Windows.Forms.Button btnDay24;
+		private System.Windows.Forms.Button btnDay23;
+		private System.Windows.Forms.Button btnDay22;
+		private System.Windows.Forms.Button btnDay21;
+		private System.Windows.Forms.Button btnDay20;
+		private System.Windows.Forms.Button btnDay19;
+		private System.Windows.Forms.Button btnDay18;
+		private System.Windows.Forms.Button btnDay17;
+		private System.Windows.Forms.Button btnDay16;
 	}
 }
 

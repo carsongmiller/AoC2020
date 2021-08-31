@@ -25,7 +25,7 @@ namespace AdventOfCode2020
 
 		private string[] getInput(string filename, string[] delimeters = null)
 		{
-			if (delimeters is null) delimeters = new string[2] { "\n", "\r\n"};
+			if (delimeters is null) delimeters = new string[2] { "\n", "\r\n" };
 
 			string input = File.ReadAllText(inputPath + filename);
 			return input.Trim().Split(delimeters, StringSplitOptions.None);
@@ -44,7 +44,7 @@ namespace AdventOfCode2020
 			{
 				for (j = i + 1; j < inputSplit.Length; j++)
 				{
-					
+
 					bool num1Success = Int32.TryParse(inputSplit[i], out num1);
 					bool num2Success = Int32.TryParse(inputSplit[j], out num2);
 
@@ -202,7 +202,7 @@ namespace AdventOfCode2020
 				x = x % width;
 				char pos = inputSplit[y].ElementAt(x);
 				if (pos == '#')
-				{treeCount += 1;}
+				{ treeCount += 1; }
 				x += run;
 				y += rise;
 			}
@@ -385,7 +385,7 @@ namespace AdventOfCode2020
 				{
 					foundFirstTaken = taken[i];
 				}
-				else if(!taken[i])
+				else if (!taken[i])
 				{
 					mySeat = i;
 					break;
@@ -411,7 +411,7 @@ namespace AdventOfCode2020
 				{
 					foreach (byte b in Encoding.UTF8.GetBytes(person.ToCharArray()))
 					{
-						answers[b-97] = true;
+						answers[b - 97] = true;
 					}
 				}
 				totalCount += answers.Where(c => c).Count();
@@ -444,7 +444,7 @@ namespace AdventOfCode2020
 				{
 
 				}
-				splitLine.ToList().ForEach(x => { if(Regex.Match(x, "\\d").Success) rules.Add(new bagRule(x)); });
+				splitLine.ToList().ForEach(x => { if (Regex.Match(x, "\\d").Success) rules.Add(new bagRule(x)); });
 				dict.Add(splitLine[0], rules);
 				//values with count = 0 are terminal cases
 			}
@@ -464,7 +464,7 @@ namespace AdventOfCode2020
 
 
 
-		private int day7CountPart1 (string target, string current, Dictionary<string, List<bagRule>> dict)
+		private int day7CountPart1(string target, string current, Dictionary<string, List<bagRule>> dict)
 		{
 			int localCount = 0;
 			if (dict[current].Count == 0) return 0;
@@ -522,7 +522,7 @@ namespace AdventOfCode2020
 			string[] inputSplit = getInput("input8.txt");
 			Processor p = new Processor(inputSplit);
 
-			
+
 			//Part 1
 			while (!p.nextStepRepeat)
 			{
@@ -672,6 +672,258 @@ namespace AdventOfCode2020
 				}
 			}
 			Console.WriteLine("Part 2: " + combos);
+		}
+
+		private void btnDay11_Click(object sender, EventArgs e)
+		{
+			int[][] seats = Array.ConvertAll(getInput("input11.txt"), s => { return Array.ConvertAll(s.Replace('.', '0').Replace('L', '1').Replace('#', '2').ToCharArray(), str => { return int.Parse(str.ToString()); }); });
+			int[][] lastSeats = new int[seats.GetUpperBound(0)][];
+
+			bool same = false;
+			while (!same)
+			{
+				lastSeats = seats.Clone() as int[][];
+				seats = SeatStep(seats);
+
+				same = true;
+				for (int i = 0; i < seats.Length; i++)
+				{
+					for (int j = 0; j < seats[0].Length; j++)
+					{
+						same = seats[i][j] == lastSeats[i][j];
+						if (!same) break;
+					}
+					if (!same) break;
+				}
+			}
+
+			Console.WriteLine("Part 1: " + seats.Select(x => x.Prepend(0).Aggregate((sum, current) => sum += current == 2 ? 1 : 0)).Sum());
+
+			//Part 2
+			same = false;
+
+			seats = Array.ConvertAll(getInput("input11Test1.txt"), s => { return Array.ConvertAll(s.Replace('.', '0').Replace('L', '1').Replace('#', '2').ToCharArray(), str => { return int.Parse(str.ToString()); }); });
+
+			while (!same)
+			{
+
+				foreach (int[] row in seats)
+				{
+					foreach (int cell in row)
+					{
+						switch (cell)
+						{
+							case 0:
+								Console.Write(".");
+								break;
+							case 1:
+								Console.Write("L");
+								break;
+							case 2:
+								Console.Write("#");
+								break;
+						}
+					}
+					Console.WriteLine();
+				}
+				Console.WriteLine();
+
+
+				lastSeats = seats.Clone() as int[][];
+				seats = SeatStep_Part2(seats);
+
+				same = true;
+				for (int i = 0; i < seats.Length; i++)
+				{
+					for (int j = 0; j < seats[0].Length; j++)
+					{
+						same = seats[i][j] == lastSeats[i][j];
+						if (!same) break;
+					}
+					if (!same) break;
+				}
+			}
+
+			Console.WriteLine("Part 2: " + seats.Select(x => x.Prepend(0).Aggregate((sum, current) => sum += current == 2 ? 1 : 0)).Sum());
+
+		}
+
+		static T[,] To2D<T>(T[][] source)
+		{
+			try
+			{
+				int FirstDim = source.Length;
+				int SecondDim = source.GroupBy(row => row.Length).Single().Key; // throws InvalidOperationException if source is not rectangular
+
+				var result = new T[FirstDim, SecondDim];
+				for (int i = 0; i < FirstDim; ++i)
+					for (int j = 0; j < SecondDim; ++j)
+						result[i, j] = source[i][j];
+
+				return result;
+			}
+			catch (InvalidOperationException)
+			{
+				throw new InvalidOperationException("The given jagged array is not rectangular.");
+			}
+		}
+
+		private int[][] SeatStep(in int[][] arr)
+		{
+			//int[,] newArr = new int[arr.GetUpperBound(0)+1, arr.GetUpperBound(1)+1];
+
+			int[][] newArr = new int[arr.GetUpperBound(0) + 1][];
+			for (int i = 0; i < newArr.GetUpperBound(0) + 1; i++)
+			{
+				newArr[i] = new int[arr[i].GetUpperBound(0) + 1];
+			}
+
+			for (int i = 0; i <= arr.GetUpperBound(0); i++)
+			{
+				for (int j = 0; j <= arr[0].GetUpperBound(0); j++)
+				{
+					if (arr[i][j] == 0) newArr[i][j] = 0;
+					else if (arr[i][j] == 1)
+					{
+						if (NeighborCount(arr, i, j) == 0) newArr[i][j] = 2;
+						else newArr[i][j] = 1;
+					}
+					else if (arr[i][j] == 2) 
+					{ 
+						if (NeighborCount(arr, i, j) >= 4) newArr[i][j] = 1;
+						else newArr[i][j] = 2; 
+					} 
+				}
+			}
+
+			return newArr;
+		}
+
+		private int NeighborCount(in int[][] arr, int i, int j)
+		{
+			int count = 0;
+			count += (i - 1 >= 0) && (j - 1 >= 0) && arr[i - 1][j - 1] == 2 ? 1 : 0;
+			count += (i - 1 >= 0) && arr[i - 1][j] == 2 ? 1 : 0;
+			count += (i - 1 >= 0) && (j + 1 <= arr[0].GetUpperBound(0)) && arr[i - 1][j + 1] == 2 ? 1 : 0;
+
+			count += (j - 1 >= 0) && arr[i][j - 1] == 2 ? 1 : 0;
+			count += (j + 1 <= arr[0].GetUpperBound(0)) && arr[i][j + 1] == 2 ? 1 : 0;
+
+			count += (i + 1 <= arr.GetUpperBound(0)) && (j - 1 >= 0) && arr[i + 1][j - 1] == 2 ? 1 : 0;
+			count += (i + 1 <= arr.GetUpperBound(0)) && arr[i + 1][j] == 2 ? 1 : 0;
+			count += (i + 1 <= arr.GetUpperBound(0)) && (j + 1 <= arr[0].GetUpperBound(0)) && arr[i + 1][j + 1] == 2 ? 1 : 0;
+
+			return count;
+		}
+
+		private int[][] SeatStep_Part2(in int[][] arr)
+		{
+			//int[,] newArr = new int[arr.GetUpperBound(0)+1, arr.GetUpperBound(1)+1];
+
+			int[][] newArr = new int[arr.GetUpperBound(0) + 1][];
+			for (int i = 0; i < newArr.GetUpperBound(0) + 1; i++)
+			{
+				newArr[i] = new int[arr[i].GetUpperBound(0) + 1];
+			}
+
+			for (int i = 0; i <= arr.GetUpperBound(0); i++)
+			{
+				for (int j = 0; j <= arr[0].GetUpperBound(0); j++)
+				{
+					if (arr[i][j] == 0) newArr[i][j] = 0;
+					else if (arr[i][j] == 1)
+					{
+						if (NeighborCount_Part2(arr, i, j) == 0) newArr[i][j] = 2;
+						else newArr[i][j] = 1;
+					}
+					else if (arr[i][j] == 2)
+					{
+						if (NeighborCount_Part2(arr, i, j) >= 5) newArr[i][j] = 1;
+						else newArr[i][j] = 2;
+					}
+				}
+			}
+
+			return newArr;
+		}
+
+		private int NeighborCount_Part2(in int[][] arr, int i, int j)
+		{
+			int count = 0;
+
+			for (int r = 0; r < i; r++) //Top
+			{
+				if (arr[r][j] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int r = i+1; r <= arr.GetUpperBound(0); r++) //Bottom
+			{
+				if (arr[r][j] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int c = 0; c < j; c++) //Left
+			{
+				if (arr[i][c] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int c = j+1; c <= arr[0].GetUpperBound(0); c++) //Right
+			{
+				if (arr[i][c] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int x = 0; i - x >= 0 && j - x >= 0; x++) //upper left
+			{
+				if (arr[i - x][j - x] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int x = 0; i - x >= 0 && j + x <= arr[0].GetUpperBound(0); x++) //upper right
+			{
+				if (arr[i - x][j + x] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int x = 0; i + x <= arr.GetUpperBound(0) && j - x >= 0; x++) //bottom left
+			{
+				if (arr[i + x][j - x] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			for (int x = 0; i + x <= arr.GetUpperBound(0) && j + x <= arr[0].GetUpperBound(0); x++) //bottom right
+			{
+				if (arr[i + x][j + x] == 2)
+				{
+					count += 1;
+					break;
+				}
+			}
+
+			return count;
 		}
 	}
 
