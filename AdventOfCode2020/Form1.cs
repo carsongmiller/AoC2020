@@ -702,31 +702,31 @@ namespace AdventOfCode2020
 			//Part 2
 			same = false;
 
-			seats = Array.ConvertAll(getInput("input11Test1.txt"), s => { return Array.ConvertAll(s.Replace('.', '0').Replace('L', '1').Replace('#', '2').ToCharArray(), str => { return int.Parse(str.ToString()); }); });
+			seats = Array.ConvertAll(getInput("input11.txt"), s => { return Array.ConvertAll(s.Replace('.', '0').Replace('L', '1').Replace('#', '2').ToCharArray(), str => { return int.Parse(str.ToString()); }); });
 
 			while (!same)
 			{
 
-				foreach (int[] row in seats)
-				{
-					foreach (int cell in row)
-					{
-						switch (cell)
-						{
-							case 0:
-								Console.Write(".");
-								break;
-							case 1:
-								Console.Write("L");
-								break;
-							case 2:
-								Console.Write("#");
-								break;
-						}
-					}
-					Console.WriteLine();
-				}
-				Console.WriteLine();
+				//foreach (int[] row in seats)
+				//{
+				//	foreach (int cell in row)
+				//	{
+				//		switch (cell)
+				//		{
+				//			case 0:
+				//				Console.Write(".");
+				//				break;
+				//			case 1:
+				//				Console.Write("L");
+				//				break;
+				//			case 2:
+				//				Console.Write("#");
+				//				break;
+				//		}
+				//	}
+				//	Console.WriteLine();
+				//}
+				//Console.WriteLine();
 
 
 				lastSeats = seats.Clone() as int[][];
@@ -851,13 +851,14 @@ namespace AdventOfCode2020
 		{
 			int count = 0;
 
-			for (int r = 0; r < i; r++) //Top
+			for (int r = i - 1; r >= 0; r--) //Top
 			{
 				if (arr[r][j] == 2)
 				{
 					count += 1;
 					break;
 				}
+				else if (arr[r][j] == 1) break;
 			}
 
 			for (int r = i+1; r <= arr.GetUpperBound(0); r++) //Bottom
@@ -867,15 +868,17 @@ namespace AdventOfCode2020
 					count += 1;
 					break;
 				}
+				else if (arr[r][j] == 1) break;
 			}
 
-			for (int c = 0; c < j; c++) //Left
+			for (int c = j - 1; c >= 0; c--) //Left
 			{
 				if (arr[i][c] == 2)
 				{
 					count += 1;
 					break;
 				}
+				else if (arr[i][c] == 1) break;
 			}
 
 			for (int c = j+1; c <= arr[0].GetUpperBound(0); c++) //Right
@@ -885,45 +888,55 @@ namespace AdventOfCode2020
 					count += 1;
 					break;
 				}
+				else if (arr[i][c] == 1) break;
 			}
 
-			for (int x = 0; i - x >= 0 && j - x >= 0; x++) //upper left
+			for (int x = 1; i - x >= 0 && j - x >= 0; x++) //upper left
 			{
 				if (arr[i - x][j - x] == 2)
 				{
 					count += 1;
 					break;
 				}
+				else if (arr[i-x][j-x] == 1) break;
 			}
 
-			for (int x = 0; i - x >= 0 && j + x <= arr[0].GetUpperBound(0); x++) //upper right
+			for (int x = 1; i - x >= 0 && j + x <= arr[0].GetUpperBound(0); x++) //upper right
 			{
 				if (arr[i - x][j + x] == 2)
 				{
 					count += 1;
 					break;
 				}
+				else if (arr[i - x][j + x] == 1) break;
 			}
 
-			for (int x = 0; i + x <= arr.GetUpperBound(0) && j - x >= 0; x++) //bottom left
+			for (int x = 1; i + x <= arr.GetUpperBound(0) && j - x >= 0; x++) //bottom left
 			{
 				if (arr[i + x][j - x] == 2)
 				{
 					count += 1;
 					break;
 				}
+				else if (arr[i + x][j - x] == 1) break;
 			}
 
-			for (int x = 0; i + x <= arr.GetUpperBound(0) && j + x <= arr[0].GetUpperBound(0); x++) //bottom right
+			for (int x = 1; i + x <= arr.GetUpperBound(0) && j + x <= arr[0].GetUpperBound(0); x++) //bottom right
 			{
 				if (arr[i + x][j + x] == 2)
 				{
 					count += 1;
 					break;
 				}
+				else if (arr[i + x][j + x] == 1) break;
 			}
 
 			return count;
+		}
+
+		private void btnDay12_Click(object sender, EventArgs e)
+		{
+			string[] input = getInput("input12.txt");
 		}
 	}
 
