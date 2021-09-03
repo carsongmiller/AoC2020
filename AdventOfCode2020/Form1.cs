@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace AdventOfCode2020
 {
@@ -936,9 +937,128 @@ namespace AdventOfCode2020
 
 		private void btnDay12_Click(object sender, EventArgs e)
 		{
-			string[] input = getInput("input12.txt");
+			string[] steps = getInput("input12.txt");
+			//string[] steps = new string[5]
+			//{
+			//	"F10",
+			//	"N3",
+			//	"F7",
+			//	"R90",
+			//	"F11"
+			//};
+			Vector2 pos = new Vector2(0);
+			int dir = 1;
+
+			//Part 1:
+			foreach (string step in steps)
+			{
+				char command = step[0];
+				int value = int.Parse(step.Substring(1));
+				switch (command)
+				{
+					case 'N':
+						pos.Y += value;
+						break;
+					case 'S':
+						pos.Y -= value;
+						break;
+					case 'E':
+						pos.X += value;
+						break;
+					case 'W':
+						pos.X -= value;
+						break;
+					case 'L':
+						dir = (dir + 4 - (value / 90)) % 4;
+						break;
+					case 'R':
+						dir = (dir + (value / 90)) % 4;
+						break;
+					case 'F':
+						switch (dir)
+						{
+							case 0:
+								pos.Y += value;
+								break;
+							case 1:
+								pos.X += value;
+								break;
+							case 2:
+								pos.Y -= value;
+								break;
+							case 3:
+								pos.X -= value;
+								break;
+							default:
+								break;
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			Console.WriteLine("Part 1: " + (Math.Abs(pos.X) + Math.Abs(pos.Y)));
+
+
+			//Part 2
+			//steps = new string[5]
+			//{
+			//	"F10",
+			//	"N3",
+			//	"F7",
+			//	"R90",
+			//	"F11"
+			//};
+			Vector2 waypoint = new Vector2(10, 1);
+			pos = Vector2.Zero;
+			foreach (string step in steps)
+			{
+				char command = step[0];
+				int value = int.Parse(step.Substring(1));
+				switch (command)
+				{
+					case 'N':
+						waypoint.Y += value;
+						break;
+					case 'S':
+						waypoint.Y -= value;
+						break;
+					case 'E':
+						waypoint.X += value;
+						break;
+					case 'W':
+						waypoint.X -= value;
+						break;
+					case 'L':
+						waypoint = Rotate(waypoint, value * Math.PI / 180);
+						break;
+					case 'R':
+						waypoint = Rotate(waypoint, -value * Math.PI / 180);
+						break;
+					case 'F':
+						pos += waypoint * value;
+						break;
+					default:
+						break;
+				}
+			}
+			Console.WriteLine("Part 2: " + (Math.Abs(pos.X) + Math.Abs(pos.Y)));
+		}
+
+		public Vector2 Rotate(Vector2 v, double deg)
+		{
+			return new Vector2(
+				v.X * Convert.ToSingle(Math.Cos(deg)) - v.Y * Convert.ToSingle(Math.Sin(deg)),
+				v.X * Convert.ToSingle(Math.Sin(deg)) + v.Y * Convert.ToSingle(Math.Cos(deg))
+				);
+		}
+
+		private void btnDay13_Click(object sender, EventArgs e)
+		{
+			string[] steps = getInput("input13.txt");
 		}
 	}
+
 
 	public class Passport
 	{
