@@ -1055,7 +1055,21 @@ namespace AdventOfCode2020
 
 		private void btnDay13_Click(object sender, EventArgs e)
 		{
-			string[] steps = getInput("input13.txt");
+			//Part 1 single line:
+			//Console.WriteLine("Part 1: " + (File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[1].Split(',').Select(s => int.TryParse(s, out int n) ? n : (int?)null).Where(n => n.HasValue).Select(n => n.Value).ToList().Aggregate((best, next) => best = ((next - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % next)) % next) < ((best - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % best)) % best) ? next : best) * ((File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[1].Split(',').Select(s => int.TryParse(s, out int n) ? n : (int?)null).Where(n => n.HasValue).Select(n => n.Value).ToList().Aggregate((best, next) => best = ((next - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % next)) % next) < ((best - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % best)) % best) ? next : best) - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[1].Split(',').Select(s => int.TryParse(s, out int n) ? n : (int?)null).Where(n => n.HasValue).Select(n => n.Value).ToList().Aggregate((best, next) => best = ((next - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % next)) % next) < ((best - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % best)) % best) ? next : best))) % File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[1].Split(',').Select(s => int.TryParse(s, out int n) ? n : (int?)null).Where(n => n.HasValue).Select(n => n.Value).ToList().Aggregate((best, next) => best = ((next - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % next)) % next) < ((best - (int.Parse(File.ReadAllText(inputPath + "input13.txt").Trim().Split(new string[2] { "\n", "\r\n" }, StringSplitOptions.None)[0]) % best)) % best) ? next : best))));
+
+			//Part 1 normal:
+			string[] input = getInput("input13.txt");
+
+			int earliest = int.Parse(input[0]);
+			List<int> busses = input[1].Split(',')
+				.Select(s => int.TryParse(s, out int n) ? n : (int?)null)
+				.Where(n => n.HasValue)
+				.Select(n => n.Value)
+				.ToList();
+
+			int choice = busses.Aggregate((best, next) => best = ((next - (earliest % next)) % next) < ((best - (earliest % best)) % best) ? next : best);
+			Console.WriteLine("Part 1: " + (choice * ((choice - (earliest % choice)) % choice)));
 		}
 	}
 
