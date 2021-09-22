@@ -1070,6 +1070,350 @@ namespace AdventOfCode2020
 
 			int choice = busses.Aggregate((best, next) => best = ((next - (earliest % next)) % next) < ((best - (earliest % best)) % best) ? next : best);
 			Console.WriteLine("Part 1: " + (choice * ((choice - (earliest % choice)) % choice)));
+
+			//Part 2:
+			List<string> all = input[1].Split(',').ToList();
+			int lcm = 0;
+			Dictionary<ulong, ulong> constraints = new Dictionary<ulong, ulong>();
+			foreach (var bus in all.Select((value, i) => new { i, value }))
+			{
+				ulong busInterval = 0;
+				if (ulong.TryParse(bus.value, out busInterval)) constraints.Add(busInterval, Convert.ToUInt64(bus.i));
+			}
+			ulong stepSize = constraints.ElementAt(0).Key;
+			ulong testTime = stepSize;
+
+			for (int i = 1; i < constraints.Count; i++)
+			{
+				bool found = false;
+				//var currentConstraints = constraints.Take(i + 1).ToArray();
+				var nextConstraint = constraints.ElementAt(i);
+				
+				while (!found)
+				{
+					testTime += stepSize;
+					found = (testTime + nextConstraint.Value) % nextConstraint.Key == 0; //we only need to check last. All others are definitely valid
+				}
+
+				stepSize *= nextConstraint.Key;
+			}
+
+			Console.WriteLine("Part 2: " + testTime);
+		}
+
+		private void btnDay14_Click(object sender, EventArgs e)
+		{
+			string[] input = getInput("input14.txt");
+			ulong mask_and = Convert.ToUInt64(Math.Pow(2, 36) - 1);
+			ulong mask_or = 0;
+			Dictionary<ulong, ulong> memory = new Dictionary<ulong, ulong>();
+
+			//Part 1:
+			foreach (var line in input)
+			{
+				if (line[1] == 'e') //mem
+				{
+					ulong loc = ulong.Parse(line.Substring(line.IndexOf('[') + 1, line.IndexOf(']') - line.IndexOf('[') - 1));
+					ulong value = ulong.Parse(line.Substring(line.IndexOf('=') + 2));
+					if (memory.ContainsKey(loc)) memory[loc] = (value | mask_or) & mask_and;
+					else
+					{
+						memory.Add(loc, (value | mask_or) & mask_and);
+					}
+				}
+				else //mask
+				{
+					string mask_str = line.Substring(7);
+					mask_and = Convert.ToUInt64(Math.Pow(2, 36) - 1);
+					mask_or = 0;
+					for (int i = 0; i < mask_str.Length; i++) //create and and or masks
+					{
+						int value;
+						if (int.TryParse(mask_str[i].ToString(), out value))
+						{
+							if (value == 0) //need to modify AND mask
+							{
+								mask_and = mask_and ^ (Convert.ToUInt64(1) << (35-i));
+							}
+							else //need to modify OR mask
+							{
+								mask_or = mask_or | (Convert.ToUInt64(1) << (35-i));
+							}
+						}
+					}
+				}
+			}
+			Console.WriteLine("Part 1: " + memory.Values.Aggregate((sum, next) => sum += next));
+
+
+			//Part 2: 
+			//0 = unchanged
+			//1 = change to 1
+			//X = change to both 0 and 1 and overwrite both
+
+			List<ulong> floatingMasks = new List<ulong>();
+			memory = new Dictionary<ulong, ulong>();
+
+			List<ulong> masks_or = new List<ulong>();
+			List<ulong> masks_and = new List<ulong>();
+
+			foreach (var line in input)
+			{
+				if (line[1] == 'e') //mem
+				{
+					ulong loc = ulong.Parse(line.Substring(line.IndexOf('[') + 1, line.IndexOf(']') - line.IndexOf('[') - 1));
+					ulong value = ulong.Parse(line.Substring(line.IndexOf('=') + 2));
+
+					for (int i = 0; i < masks_or.Count; i++)
+					{
+						ulong newLoc = loc;
+						newLoc |= masks_or[i];
+						newLoc &= masks_and[i];
+
+						if (memory.ContainsKey(newLoc)) memory[newLoc] = value;
+						else memory.Add(newLoc, value);
+					}
+
+
+				}
+				else //mask
+				{
+					var mask = line.Substring(7);
+
+					//crate mask_or which will always be applied
+					mask_or = 0;
+					masks_or.Clear();
+					masks_and.Clear();
+
+					List<int> xLoc = new List<int>();
+
+					for (int i = 0; i < mask.Length; i++)
+					{
+						if (mask[i] == '1') mask_or = mask_or | (Convert.ToUInt64(1) << (35 - i));
+						if (mask[i] == 'X') xLoc.Add(35 - i);
+					}
+
+					//create lists of masks_or and masks_and which will be used as pairs
+
+
+					//generate all variation masks
+					for (int i = 0; i < Math.Pow(2, xLoc.Count); i++) 
+					{
+						ulong new_mask_or = 0;
+						ulong new_mask_and = Convert.ToUInt64(Math.Pow(2, 36)) - 1;
+
+						for (int j = 0; j < xLoc.Count; j++)
+						{
+							//Take i
+							//Shift it over to get a single bit
+							//AND it with 1 to remove all other bits
+							//Shift it back over to teh position in the mask we want to put it in
+							//Insert it into both the OR mask and AND mask
+							//OR mask is all 0's with 1's in the places we want to change
+							//AND mask is all 1's with 0's in teh places we want to change
+							new_mask_or = new_mask_or | (Convert.ToUInt64((i >> (xLoc.Count - j - 1)) & 1) << xLoc[j]);
+							new_mask_and = new_mask_and ^ (Convert.ToUInt64(((i >> (xLoc.Count - j - 1)) & 1) ^ 1) << xLoc[j]);
+						}
+						masks_or.Add(new_mask_or | mask_or);
+						masks_and.Add(new_mask_and);
+					}
+				}
+			}
+			Console.WriteLine("Part 2: " + memory.Values.Aggregate((sum, next) => sum += next));
+		}
+
+		private void btnDay15_Click(object sender, EventArgs e)
+		{
+			List<int> input = Array.ConvertAll(getInput("input15.txt")[0].Split(','), s => int.Parse(s)).ToList();
+
+			//Part 1:
+			while(input.Count < 2020)
+			{
+				int lastSpoken = input.Last();
+				int prevOccurence = -1;
+				for(int i = input.Count - 2; i >= 0; i--)
+				{
+					if (input[i] == lastSpoken)
+					{
+						prevOccurence = i;
+						break;
+					}
+				}
+
+				if (prevOccurence == -1) input.Add(0);
+				else input.Add(input.Count - 1 - prevOccurence);
+			}
+			Console.WriteLine("Part 1: " + input[2019]);
+
+
+
+
+			//Part 2:
+			//keep a dictinary of keys = numbers and values = the index at which they were last spoken
+
+			input = Array.ConvertAll(getInput("input15.txt")[0].Split(','), s => int.Parse(s)).ToList();
+
+			//input = new List<int>{ 0, 3, 6};
+			Dictionary<int, int> history = new Dictionary<int, int>();
+			int count = 0;
+			
+
+			for (int i = 0; i < input.Count() - 1; i++)
+			{
+				if (!history.ContainsKey(input[i])) history.Add(input[i], i);
+				else history[input[i]] = i;
+				count++;
+			}
+
+			int lastNum = input.Last();
+
+			while (count < 30000000 - 1)
+			{
+				if (!history.ContainsKey(lastNum))
+				{
+					int toAdd = lastNum;
+					lastNum = 0;
+					history.Add(toAdd, count);
+				}
+				else
+				{
+					int toAdd = lastNum;
+					lastNum = count - history[lastNum];
+					history[toAdd] = count;
+				}
+
+				
+				count++;
+			}
+			Console.WriteLine("Part 2: " + lastNum);
+		}
+
+		private void btnDay16_Click(object sender, EventArgs e)
+		{
+			var input = getInput("input16.txt", new string[] { "\n\nyour ticket:\n", "\n\nnearby tickets:\n" });
+
+			var myTicket = Array.ConvertAll(input[1].Split(','), s => int.Parse(s));
+			//Build dictionary of rules
+			var rulesList = input[0].Split('\n');
+			Dictionary<string, List<System.Drawing.Point>> rules = new Dictionary<string, List<System.Drawing.Point>>();
+
+			foreach (string rule in rulesList)
+			{
+				var splitRule = rule.Split(new string[] { ": " }, StringSplitOptions.None);
+				string ruleName = splitRule[0];
+				var ranges_str = splitRule[1].Split(new string[] { " or " }, StringSplitOptions.None);
+
+				var ranges_int = new List<System.Drawing.Point>();
+
+				foreach(string range in ranges_str)
+				{
+					var splitRange = range.Split('-');
+					int bottom = int.Parse(splitRange[0]);
+					int top = int.Parse(splitRange[1]);
+					ranges_int.Add(new System.Drawing.Point(bottom, top));
+				}
+
+				rules.Add(ruleName, ranges_int);
+			}
+
+			var tickets = input[2].Split('\n');
+			var validTickets = new List<List<int>>();
+
+			int errorRate = 0;
+
+			foreach (var ticket in tickets)
+			{
+				var allValid = true;
+				var values = Array.ConvertAll(ticket.Split(','), s => int.Parse(s));
+				foreach (var value in values)
+				{
+					bool valid = false;
+					foreach (var dictItem in rules)
+					{
+						foreach (var range in dictItem.Value)
+						{
+							valid = value >= range.X && value <= range.Y;
+							if (valid) break;
+						}
+						if (valid) break;
+					}
+					if (!valid)
+					{
+						errorRate += value;
+						allValid = false;
+					}
+				}
+				if (allValid) validTickets.Add(values.ToList());
+			}
+
+			Console.WriteLine("Part 1: " + errorRate);
+
+
+			//Part 2:
+			var ruleOrder = new List<List<string>>();
+
+			for (int i = 0; i < validTickets[0].Count(); i++) //the index of the value on the ticket we're looking at
+			{
+				ruleOrder.Add(new List<string>());
+				foreach (var rule in rules) //check if all values in that index for all tickets satisfy each rule
+				{
+					bool allValid = true; //this index for all tickets works with the current rule
+					
+					foreach (var ticket in validTickets) //check that index for each ticket
+					{
+						
+						allValid = (ticket[i] >= rule.Value[0].X && ticket[i] <= rule.Value[0].Y) || (ticket[i] >= rule.Value[1].X && ticket[i] <= rule.Value[1].Y);
+						if (!allValid) break;
+					}
+					if (allValid) //this rule works for the current index
+					{
+						ruleOrder[i].Add(rule.Key);
+					}
+				}
+			}
+
+			//Now we've got a list of lists which say which rules could potentially work for each index
+			//Process of elimination to figure out exactly which rule goes to which index
+
+			bool allSingle = false;
+
+			while (!allSingle)
+			{
+				for (int i = 0; i < ruleOrder.Count(); i++)
+				{
+					if (ruleOrder[i].Count() == 1)
+					{
+						var thisName = ruleOrder[i][0];
+						for (int j = 0; j < ruleOrder.Count(); j++)
+						{
+							if (j != i && ruleOrder[j].Contains(thisName))
+							{
+								ruleOrder[j].Remove(thisName);
+							}
+						}
+					}
+				}
+
+				allSingle = true;
+				foreach (var index in ruleOrder)
+				{
+					if (index.Count() > 1)
+					{
+						allSingle = false;
+						break;
+					}
+				}
+			}
+
+			//we've now got a list of exactly what order the rules go in
+			ulong product = 1;
+
+			for (int i = 0; i < ruleOrder.Count(); i++)
+			{
+				if (ruleOrder[i][0].IndexOf("departure") == 0) product *= Convert.ToUInt64(myTicket[i]);
+			}
+
+			Console.WriteLine("Part 2: " + product);
 		}
 	}
 

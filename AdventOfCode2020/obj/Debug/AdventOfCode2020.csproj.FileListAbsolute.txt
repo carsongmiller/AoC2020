@@ -30,3 +30,5 @@ C:\Users\17632\source\repos\AoC2020\AdventOfCode2020\obj\Debug\AdventOfCode2020.
 C:\Users\17632\source\repos\AoC2020\AdventOfCode2020\obj\Debug\AdventOfCode2020.pdb
 C:\Users\17632\source\repos\AoC2020\AdventOfCode2020\bin\Debug\System.Numerics.Vectors.dll
 C:\Users\17632\source\repos\AoC2020\AdventOfCode2020\obj\Debug\AdventOfCode2020.csproj.CopyComplete
+C:\Users\carso\Documents\Programming\AoC2020\AdventOfCode2020\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\carso\Documents\Programming\AoC2020\AdventOfCode2020\obj\Debug\AdventOfCode2020.csproj.CopyComplete
