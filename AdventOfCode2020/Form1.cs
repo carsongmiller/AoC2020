@@ -1702,6 +1702,245 @@ namespace AdventOfCode2020
 		private void btnDay18_Click(object sender, EventArgs e)
 		{
 			var input = getInput("input18.txt");
+
+			//Part 1
+			ulong sum = 0;
+			foreach (var line in input) sum += NewMath_Part1(line);
+			Console.WriteLine("Part 1:" + sum);
+
+
+			//Part 2:
+
+			Console.WriteLine(NewMath_Part2("1 + (2 * 3) + (4 * (5 + 6))"));
+			Console.WriteLine(NewMath_Part2("2 * 3 + (4 * 5)"));
+			Console.WriteLine(NewMath_Part2("5 + (8 * 3 + 9 + 3 * 4 * 3)"));
+			Console.WriteLine(NewMath_Part2("5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"));
+			Console.WriteLine(NewMath_Part2("((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"));
+			//sum = 0;
+			//foreach (var line in input) sum += NewMath_Part2(line);
+			//Console.WriteLine(sum);
+		}
+
+
+		private ulong NewMath_Part1(string s)
+		{
+			s = Regex.Replace(s, "\\s+", ""); //remove all whitespace
+			if (s.First() == '(' && s.Last() == ')') //remove outer parentheses if they are a pair
+			{
+				int parenCount = 1;
+				for (int j = 1; j < s.Length; j++)
+				{
+					if (s[j] == '(') parenCount++;
+					else if (s[j] == ')') parenCount--;
+					if (parenCount == 0) //we found the end of the opening paren
+					{
+						if (j == s.Length - 1) s = s.Substring(1, s.Length - 2); //if the paren's enclose the whole statement, trim them off
+						break;
+					}
+				}
+			}
+
+
+			//Terminal case.  input string is just a number
+			ulong answer = 0;
+			bool isNumeric = ulong.TryParse(s, out answer);
+			if (isNumeric) return answer;
+
+			//if contains parentheses, solve those first
+
+			
+
+			//find what the next operation needs to be
+			string operand1 = "";
+			string operand2 = "";
+			string oper = "";
+
+			//find the first operand
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (s[i] == '(') //found a left parentheses.  Now find the closing one
+				{
+					int parenCount = 1;
+					int closeParenLoc = -1;
+					for (closeParenLoc = i + 1; closeParenLoc < s.Length; closeParenLoc++)
+					{
+						if (s[closeParenLoc] == '(') parenCount++;
+						else if (s[closeParenLoc] == ')') parenCount--;
+						if (parenCount == 0) break;
+					}
+					operand1 = s.Substring(0, closeParenLoc + 1);
+					s = s.Substring(closeParenLoc + 1);
+					oper = s.First().ToString();
+					s = s.Substring(1);
+					break;
+				}
+				else if (s[i] == '+' || s[i] == '*') //we found an operator
+				{
+					operand1 = s.Substring(0, i);
+					s = s.Substring(i);
+					oper = s.First().ToString();
+					s = s.Substring(1);
+					break;
+				}
+			}
+
+			//find the second operand
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (s[i] == '(') //found a left parentheses.  Now find the closing one
+				{
+					int parenCount = 1;
+					int closeParenLoc = -1;
+					for (closeParenLoc = i + 1; closeParenLoc < s.Length; closeParenLoc++)
+					{
+						if (s[closeParenLoc] == '(') parenCount++;
+						else if (s[closeParenLoc] == ')') parenCount--;
+						if (parenCount == 0) break;
+					}
+					operand2 = s.Substring(0, closeParenLoc + 1);
+					s = s.Substring(closeParenLoc + 1);
+					break;
+				}
+				else if (s[i] == '+' || s[i] == '*') //we found an operator.  We want to take everything to the left of it.
+				{
+					operand2 = s.Substring(0, i);
+					s = s.Substring(i);
+					break;
+				}
+				else if (i == s.Length - 1) //we're at the end
+				{
+					operand2 = s;
+					s = "";
+					break;
+				}
+			}
+
+			//we now have 4 strings: operand 1, oper(ator), operand 2, and s (everything left over to the right)
+
+			if (oper == "+") return NewMath_Part1((NewMath_Part1(operand1) + NewMath_Part1(operand2)).ToString() + s);
+			else if (oper == "*") return NewMath_Part1((NewMath_Part1(operand1) * NewMath_Part1(operand2)).ToString() + s);
+
+			//we only get here if the string isn't a plan number, doesn't contain (, ), +, or *
+			//AKA somehting's malformed or something
+			return ulong.MinValue;
+		}
+
+		private ulong NewMath_Part2(string s)
+		{
+			s = Regex.Replace(s, "\\s+", ""); //remove all whitespace
+			if (s.First() == '(' && s.Last() == ')') //remove outer parentheses if they are a pair
+			{
+				int parenCount = 1;
+				for (int j = 1; j < s.Length; j++)
+				{
+					if (s[j] == '(') parenCount++;
+					else if (s[j] == ')') parenCount--;
+					if (parenCount == 0) //we found the end of the opening paren
+					{
+						if (j == s.Length - 1) s = s.Substring(1, s.Length - 2); //if the paren's enclose the whole statement, trim them off
+						break;
+					}
+				}
+			}
+
+
+			//Terminal case.  input string is just a number
+			ulong answer = 0;
+			bool isNumeric = ulong.TryParse(s, out answer);
+			if (isNumeric) return answer;
+
+			//if contains parentheses, solve those first
+
+
+
+			//find what the next operation needs to be
+			string operand1 = "";
+			string operand2 = "";
+			string oper = "";
+
+			//find the first operand
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (s[i] == '(' && i == 0) //found a left parentheses.  Now find the closing one
+				{
+					int parenCount = 1;
+					int closeParenLoc = -1;
+					for (closeParenLoc = i + 1; closeParenLoc < s.Length; closeParenLoc++)
+					{
+						if (s[closeParenLoc] == '(') parenCount++;
+						else if (s[closeParenLoc] == ')') parenCount--;
+						if (parenCount == 0) break;
+					}
+					operand1 = s.Substring(i, closeParenLoc - i + 1);
+					s = s.Substring(closeParenLoc + 1);
+					oper = s.First().ToString();
+					s = s.Substring(1);
+					break;
+				}
+				else if (s[i] == '+') //we found a + (which takes precedence over *)
+				{
+					operand1 = s.Substring(0, i);
+					s = s.Substring(i);
+					oper = s.First().ToString();
+					s = s.Substring(1);
+					break;
+				}
+			}
+
+			if (operand1 == "") //no + or () were found.  Look again, now for *
+			{
+				for (int i = 0; i < s.Length; i++)
+				{
+					if (s[i] == '*')
+					{
+						operand1 = s.Substring(0, i);
+						s = s.Substring(i);
+						oper = s.First().ToString();
+						s = s.Substring(1);
+						break;
+					}
+				}
+			}
+
+			//find the second operand
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (s[i] == '(') //found a left parentheses.  Now find the closing one
+				{
+					int parenCount = 1;
+					int closeParenLoc = -1;
+					for (closeParenLoc = i + 1; closeParenLoc < s.Length; closeParenLoc++)
+					{
+						if (s[closeParenLoc] == '(') parenCount++;
+						else if (s[closeParenLoc] == ')') parenCount--;
+						if (parenCount == 0) break;
+					}
+					operand2 = s.Substring(0, closeParenLoc + 1);
+					s = s.Substring(closeParenLoc + 1);
+					break;
+				}
+				else if (s[i] == '+' || s[i] == '*') //we found an operator.  We want to take everything to the left of it.
+				{
+					operand2 = s.Substring(0, i);
+					s = s.Substring(i);
+					break;
+				}
+				else if (i == s.Length - 1) //we're at the end
+				{
+					operand2 = s;
+					s = "";
+					break;
+				}
+			}
+
+			//we now have 4 strings: operand 1, oper(ator), operand 2, and s (everything left over to the right)
+
+			if (oper == "+") return NewMath_Part2((NewMath_Part2(operand1) + NewMath_Part2(operand2)).ToString() + s);
+			else if (oper == "*") return NewMath_Part2((NewMath_Part2(operand1) * NewMath_Part2(operand2)).ToString() + s);
+
+			//we only get here if the string isn't a plan number, doesn't contain (, ), +, or *
+			//AKA somehting's malformed or something
+			return ulong.MinValue;
 		}
 	}
 
