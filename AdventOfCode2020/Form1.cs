@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace AdventOfCode2020
 {
@@ -463,8 +464,7 @@ namespace AdventOfCode2020
 			Console.WriteLine("Part 2: " + (count - 1));
 		}
 
-
-
+		#region Day 7 Helpers
 		private int day7CountPart1(string target, string current, Dictionary<string, List<bagRule>> dict)
 		{
 			int localCount = 0;
@@ -517,6 +517,8 @@ namespace AdventOfCode2020
 				type = s.Substring(2).Trim();
 			}
 		}
+
+		#endregion
 
 		private void btnDay8_Click(object sender, EventArgs e)
 		{
@@ -749,6 +751,7 @@ namespace AdventOfCode2020
 
 		}
 
+		#region Day 11 Helpers
 		static T[,] To2D<T>(T[][] source)
 		{
 			try
@@ -935,6 +938,8 @@ namespace AdventOfCode2020
 			return count;
 		}
 
+		#endregion
+
 		private void btnDay12_Click(object sender, EventArgs e)
 		{
 			string[] steps = getInput("input12.txt");
@@ -1045,6 +1050,7 @@ namespace AdventOfCode2020
 			Console.WriteLine("Part 2: " + (Math.Abs(pos.X) + Math.Abs(pos.Y)));
 		}
 
+		#region Day 12 Helpers
 		public Vector2 Rotate(Vector2 v, double deg)
 		{
 			return new Vector2(
@@ -1052,6 +1058,7 @@ namespace AdventOfCode2020
 				v.X * Convert.ToSingle(Math.Sin(deg)) + v.Y * Convert.ToSingle(Math.Cos(deg))
 				);
 		}
+		#endregion
 
 		private void btnDay13_Click(object sender, EventArgs e)
 		{
@@ -1414,10 +1421,292 @@ namespace AdventOfCode2020
 			}
 
 			Console.WriteLine("Part 2: " + product);
+
+		}
+
+		private void btnDay17_Click(object sender, EventArgs e)
+		{
+			var input = getInput("input17.txt");
+
+
+			//Part 1:
+
+			//space is just a list of points.  If a point is in the list, it's active.  If not, it's not
+			var space3D = new List<(int, int, int)>();
+			
+			//populate initial space
+			for (int x = 0; x < input.Length; x++)
+			{
+				for (int y = 0; y < input[0].Length; y++)
+				{
+					if (input[x][y] == '#') space3D.Add((x, y, 0));
+				}
+			}
+			
+			//simulate
+			for (int step = 1; step <= 6; step++) Step(ref space3D);
+			Console.WriteLine("Part 1: " + space3D.Count());
+
+
+
+			//Part 2:
+			//reinitialize space
+			var space4D = new List<(int, int, int, int)>();
+
+			//populate initial space
+			for (int x = 0; x < input.Length; x++)
+			{
+				for (int y = 0; y < input[0].Length; y++)
+				{
+					if (input[x][y] == '#') space4D.Add((x, y, 0, 0));
+				}
+			}
+
+			//simulate
+			for (int step = 1; step <= 6; step++) Step(ref space4D);
+			Console.WriteLine("Part 2: " + space4D.Count());
+		}
+
+		#region Day 17 Helpers - 3D
+		private int GetActiveNeighbors(List<(int, int, int)> space, (int, int, int) center)
+		{
+			int count = 0;
+			foreach (var point in space) count += (AreNeighbors(center, point) && !(point == center)) ? 1 : 0;
+			return count;
+		}
+
+		private bool AreNeighbors((int, int, int) a, (int, int, int) b)
+		{
+			return (Math.Abs(a.Item1 - b.Item1) <= 1) && (Math.Abs(a.Item2 - b.Item2) <= 1) && (Math.Abs(a.Item3 - b.Item3) <= 1);
+		}
+
+		private (int, int) GetLimits_X(List<(int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item1 < limits.Item1 ? point.Item1 : limits.Item1;
+				limits.Item2 = point.Item1 > limits.Item2 ? point.Item1 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private (int, int) GetLimits_Y(List<(int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item2 < limits.Item1 ? point.Item2 : limits.Item1;
+				limits.Item2 = point.Item2 > limits.Item2 ? point.Item2 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private (int, int) GetLimits_Z(List<(int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item3 < limits.Item1 ? point.Item3 : limits.Item1;
+				limits.Item2 = point.Item3 > limits.Item2 ? point.Item3 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private void Step(ref List<(int, int, int)> space)
+		{
+			var lim_x = GetLimits_X(space);
+			var lim_y = GetLimits_Y(space);
+			var lim_z = GetLimits_Z(space);
+
+			var newSpace = new List<(int, int, int)>();
+
+			for (int z = lim_z.Item1 - 1; z <= lim_z.Item2 + 1; z++)
+			{
+				for (int x = lim_x.Item1 - 1; x <= lim_x.Item2 + 1; x++)
+				{
+					for (int y = lim_y.Item1 - 1; y <= lim_y.Item2 + 1; y++)
+					{
+					
+						int activeN = GetActiveNeighbors(space, (x, y, z));
+
+						if (space.Contains((x, y, z))) 
+						{
+							if (activeN == 2 || activeN == 3) newSpace.Add((x, y, z));
+						}
+						else
+						{
+							if (activeN == 3) newSpace.Add((x, y, z));
+						}
+					}
+				}
+			}
+
+			space = newSpace;
+		}
+
+		private void printSpace(List<(int, int, int)> space)
+		{
+			var lim_x = GetLimits_X(space);
+			var lim_y = GetLimits_Y(space);
+			var lim_z = GetLimits_Z(space);
+
+			for (int z = lim_z.Item1; z <= lim_z.Item2; z++)
+			{
+				Console.WriteLine("\nz=" + z);
+				for (int x = lim_x.Item1; x <= lim_x.Item2; x++)
+				{
+					for (int y = lim_y.Item1; y <= lim_y.Item2; y++)
+					{
+						if (space.Contains((x, y, z))) Console.Write("#");
+						else Console.Write(".");
+					}
+					Console.WriteLine();
+				}
+			}
+			Console.WriteLine();
+		}
+
+		#endregion
+
+		#region Day 17 Helpers - 4D
+		private int GetActiveNeighbors(List<(int, int, int, int)> space, (int, int, int, int) center)
+		{
+			int count = 0;
+			foreach (var point in space) count += (AreNeighbors(center, point) && !(point == center)) ? 1 : 0;
+			return count;
+		}
+
+		private bool AreNeighbors((int, int, int, int) a, (int, int, int, int) b)
+		{
+			return (Math.Abs(a.Item1 - b.Item1) <= 1) && (Math.Abs(a.Item2 - b.Item2) <= 1) && (Math.Abs(a.Item3 - b.Item3) <= 1) && (Math.Abs(a.Item4 - b.Item4) <= 1);
+		}
+
+		private (int, int) GetLimits_X(List<(int, int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item1 < limits.Item1 ? point.Item1 : limits.Item1;
+				limits.Item2 = point.Item1 > limits.Item2 ? point.Item1 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private (int, int) GetLimits_Y(List<(int, int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item2 < limits.Item1 ? point.Item2 : limits.Item1;
+				limits.Item2 = point.Item2 > limits.Item2 ? point.Item2 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private (int, int) GetLimits_Z(List<(int, int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item3 < limits.Item1 ? point.Item3 : limits.Item1;
+				limits.Item2 = point.Item3 > limits.Item2 ? point.Item3 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private (int, int) GetLimits_W(List<(int, int, int, int)> space)
+		{
+			(int, int) limits = (int.MaxValue, int.MinValue);
+			foreach (var point in space)
+			{
+				limits.Item1 = point.Item4 < limits.Item1 ? point.Item4 : limits.Item1;
+				limits.Item2 = point.Item4 > limits.Item2 ? point.Item4 : limits.Item2;
+			}
+
+			return limits;
+		}
+
+		private void Step(ref List<(int, int, int, int)> space)
+		{
+			var lim_x = GetLimits_X(space);
+			var lim_y = GetLimits_Y(space);
+			var lim_z = GetLimits_Z(space);
+			var lim_w = GetLimits_W(space);
+
+			var newSpace = new List<(int, int, int, int)>();
+
+			for (int w = lim_w.Item1 - 1; w <= lim_w.Item2 + 1; w++)
+			{
+				for (int z = lim_z.Item1 - 1; z <= lim_z.Item2 + 1; z++)
+				{
+					for (int x = lim_x.Item1 - 1; x <= lim_x.Item2 + 1; x++)
+					{
+						for (int y = lim_y.Item1 - 1; y <= lim_y.Item2 + 1; y++)
+						{
+
+							int activeN = GetActiveNeighbors(space, (x, y, z, w));
+
+							if (space.Contains((x, y, z, w)))
+							{
+								if (activeN == 2 || activeN == 3) newSpace.Add((x, y, z, w));
+							}
+							else
+							{
+								if (activeN == 3) newSpace.Add((x, y, z, w));
+							}
+						}
+					}
+				}
+			}
+			
+
+			space = newSpace;
+		}
+
+		private void printSpace(List<(int, int, int, int)> space)
+		{
+			var lim_x = GetLimits_X(space);
+			var lim_y = GetLimits_Y(space);
+			var lim_z = GetLimits_Z(space);
+			var lim_w = GetLimits_W(space);
+
+			for (int w = lim_w.Item1; w <= lim_w.Item2; w++)
+			{
+				for (int z = lim_z.Item1; z <= lim_z.Item2; z++)
+				{
+					Console.WriteLine("\nz=" + z);
+					for (int x = lim_x.Item1; x <= lim_x.Item2; x++)
+					{
+						for (int y = lim_y.Item1; y <= lim_y.Item2; y++)
+						{
+							if (space.Contains((x, y, z, w))) Console.Write("#");
+							else Console.Write(".");
+						}
+						Console.WriteLine();
+					}
+				}
+			}
+			Console.WriteLine();
+
+		}
+
+		#endregion
+
+		private void btnDay18_Click(object sender, EventArgs e)
+		{
+			var input = getInput("input18.txt");
 		}
 	}
 
 
+	#region Passport Stuff (Day 4)
 	public class Passport
 	{
 		public int BYR = -1;
@@ -1506,5 +1795,7 @@ namespace AdventOfCode2020
 				}
 			}
 		}
+		
 	}
+	#endregion
 }

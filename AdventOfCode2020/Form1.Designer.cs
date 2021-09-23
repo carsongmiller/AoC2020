@@ -322,6 +322,7 @@ namespace AdventOfCode2020
 			this.btnDay18.TabIndex = 19;
 			this.btnDay18.Text = "18";
 			this.btnDay18.UseVisualStyleBackColor = true;
+			this.btnDay18.Click += new System.EventHandler(this.btnDay18_Click);
 			// 
 			// btnDay17
 			// 
@@ -332,6 +333,7 @@ namespace AdventOfCode2020
 			this.btnDay17.TabIndex = 18;
 			this.btnDay17.Text = "17";
 			this.btnDay17.UseVisualStyleBackColor = true;
+			this.btnDay17.Click += new System.EventHandler(this.btnDay17_Click);
 			// 
 			// btnDay16
 			// 
