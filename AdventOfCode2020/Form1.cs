@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Drawing;
 
 namespace AdventOfCode2020
 {
@@ -1706,22 +1707,16 @@ namespace AdventOfCode2020
 			//Part 1
 			ulong sum = 0;
 			foreach (var line in input) sum += NewMath_Part1(line);
-			Console.WriteLine("Part 1:" + sum);
+			Console.WriteLine("Part 1: " + sum);
 
 
 			//Part 2:
-
-			Console.WriteLine(NewMath_Part2("1 + (2 * 3) + (4 * (5 + 6))"));
-			Console.WriteLine(NewMath_Part2("2 * 3 + (4 * 5)"));
-			Console.WriteLine(NewMath_Part2("5 + (8 * 3 + 9 + 3 * 4 * 3)"));
-			Console.WriteLine(NewMath_Part2("5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"));
-			Console.WriteLine(NewMath_Part2("((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"));
-			//sum = 0;
-			//foreach (var line in input) sum += NewMath_Part2(line);
-			//Console.WriteLine(sum);
+			sum = 0;
+			foreach (var line in input) sum += NewMath_Part2(line);
+			Console.WriteLine("Part 2: " + sum);
 		}
 
-
+		#region Day 18 Helpers
 		private ulong NewMath_Part1(string s)
 		{
 			s = Regex.Replace(s, "\\s+", ""); //remove all whitespace
@@ -1843,43 +1838,56 @@ namespace AdventOfCode2020
 				}
 			}
 
-
 			//Terminal case.  input string is just a number
 			ulong answer = 0;
 			bool isNumeric = ulong.TryParse(s, out answer);
 			if (isNumeric) return answer;
-
-			//if contains parentheses, solve those first
-
 
 
 			//find what the next operation needs to be
 			string operand1 = "";
 			string operand2 = "";
 			string oper = "";
+			string s_firstHalf = "";
+			string s_secondHalf = "";
 
-			//find the first operand
+
+			//do one pass through the string looking for any parentheses that should be solved first
 			for (int i = 0; i < s.Length; i++)
 			{
-				if (s[i] == '(' && i == 0) //found a left parentheses.  Now find the closing one
+				if (s[i] == '(')
 				{
 					int parenCount = 1;
-					int closeParenLoc = -1;
+					int closeParenLoc;
 					for (closeParenLoc = i + 1; closeParenLoc < s.Length; closeParenLoc++)
 					{
 						if (s[closeParenLoc] == '(') parenCount++;
 						else if (s[closeParenLoc] == ')') parenCount--;
-						if (parenCount == 0) break;
+						if (parenCount == 0)
+						{
+							s = s.Substring(0, i) + NewMath_Part2(s.Substring(i, closeParenLoc - i + 1)).ToString() + s.Substring(closeParenLoc + 1).ToString();
+							i = 0; //repeat search until no more parens
+							break;
+						}
 					}
-					operand1 = s.Substring(i, closeParenLoc - i + 1);
-					s = s.Substring(closeParenLoc + 1);
-					oper = s.First().ToString();
-					s = s.Substring(1);
-					break;
 				}
-				else if (s[i] == '+') //we found a + (which takes precedence over *)
+			}
+
+			//now we have only + and * operators, no parens
+
+			//do a loop and look for + operators
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (s[i] == '+')
 				{
-					operand1 = s.Substring(0, i);
+					//once we found a +, look to the left until we either hit the beginning of the string or a * operator
+					int operand1Start;
+					for (operand1Start = i - 1; operand1Start >= 0; operand1Start--)
+					{
+						if (s[operand1Start] == '*') break;
+					}
+					operand1 = s.Substring(operand1Start + 1, i - operand1Start - 1);
+					s_firstHalf = s.Substring(0, operand1Start + 1);
 					s = s.Substring(i);
 					oper = s.First().ToString();
 					s = s.Substring(1);
@@ -1887,12 +1895,14 @@ namespace AdventOfCode2020
 				}
 			}
 
-			if (operand1 == "") //no + or () were found.  Look again, now for *
+			//now check for * if we didn't find a +
+			if (operand1 == "")
 			{
 				for (int i = 0; i < s.Length; i++)
 				{
 					if (s[i] == '*')
 					{
+						//once we found a *, we know that everything to the left is the first operand
 						operand1 = s.Substring(0, i);
 						s = s.Substring(i);
 						oper = s.First().ToString();
@@ -1902,47 +1912,422 @@ namespace AdventOfCode2020
 				}
 			}
 
-			//find the second operand
-			for (int i = 0; i < s.Length; i++)
+			//now find operand 2:
+			//look for any operator in s.  Everything to the left of it is operand2
+			int operand2End;
+			for (operand2End = 0; operand2End < s.Length; operand2End++)
 			{
-				if (s[i] == '(') //found a left parentheses.  Now find the closing one
-				{
-					int parenCount = 1;
-					int closeParenLoc = -1;
-					for (closeParenLoc = i + 1; closeParenLoc < s.Length; closeParenLoc++)
-					{
-						if (s[closeParenLoc] == '(') parenCount++;
-						else if (s[closeParenLoc] == ')') parenCount--;
-						if (parenCount == 0) break;
-					}
-					operand2 = s.Substring(0, closeParenLoc + 1);
-					s = s.Substring(closeParenLoc + 1);
-					break;
-				}
-				else if (s[i] == '+' || s[i] == '*') //we found an operator.  We want to take everything to the left of it.
-				{
-					operand2 = s.Substring(0, i);
-					s = s.Substring(i);
-					break;
-				}
-				else if (i == s.Length - 1) //we're at the end
-				{
-					operand2 = s;
-					s = "";
-					break;
-				}
+				if (s[operand2End] == '*' || s[operand2End] == '+') break;
 			}
+
+			//once we found an operator (or hit end of string), we know that everything to the left is the first operand
+			operand2 = s.Substring(0, operand2End);
+			s_secondHalf = s.Substring(operand2End);
+			s = ""; //clear out s, just for cleanliness
+
 
 			//we now have 4 strings: operand 1, oper(ator), operand 2, and s (everything left over to the right)
 
-			if (oper == "+") return NewMath_Part2((NewMath_Part2(operand1) + NewMath_Part2(operand2)).ToString() + s);
-			else if (oper == "*") return NewMath_Part2((NewMath_Part2(operand1) * NewMath_Part2(operand2)).ToString() + s);
+			if (oper == "+") return NewMath_Part2(s_firstHalf + (NewMath_Part2(operand1) + NewMath_Part2(operand2)).ToString() + s_secondHalf);
+			else if (oper == "*") return NewMath_Part2(s_firstHalf + (NewMath_Part2(operand1) * NewMath_Part2(operand2)).ToString() + s_secondHalf);
 
 			//we only get here if the string isn't a plan number, doesn't contain (, ), +, or *
 			//AKA somehting's malformed or something
 			return ulong.MinValue;
 		}
+		#endregion
+		private void btnDay19_Click(object sender, EventArgs e)
+		{
+			//Part 1:
+			var input = getInput("input19.txt", new string[] { "\n\n", "\r\n\r\n" });
+
+			var rules_raw = input[0].Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+			var rules = new Dictionary<int, string>();
+			var messages = input[1].Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+			foreach (var rawRule in rules_raw) //build rules dictionary
+			{
+				var split = rawRule.Split(new string[] { ": " }, StringSplitOptions.None);
+				int ruleNum = int.Parse(split[0]);
+				string conditions = split[1];
+				rules.Add(ruleNum, conditions.Trim());
+			}
+
+			
+
+			var expanded_Part1_0 = expandRule(ref rules, 0);
+
+			int successCount_Part1 = 0;
+			var unmatched = new List<string>();
+			foreach (var s in messages)
+			{
+				//if a message doesn't match the unmodified rules, we'll add it to a list.  These are the only ones we'll care about for part 2
+				if (expanded_Part1_0.Contains(s)) successCount_Part1++;
+				else unmatched.Add(s);
+			}
+
+			Console.WriteLine("Part 1: " + successCount_Part1);
+
+
+			//Part 2:
+
+			//For part 2, any messages that already matched will still match
+
+			//new 8:
+			//8: 42 | 42 8
+
+			//new 11:
+			//11: 42 31 | 41 11 31
+
+			
+
+			//expand out rules 42 and 31 so we can check which previously unmatched messages contain repetitions of the new rules 8 or 11
+			var expanded_42 = expandRule(ref rules, 42);
+			var expanded_31 = expandRule(ref rules, 31);
+
+			var regex_42 = "(";
+			foreach (var rule in expanded_42)
+			{
+				regex_42 += "(";
+				foreach (char c in rule) regex_42 += "[" + c + "]";
+				regex_42 += ")|";
+			}
+			regex_42 = regex_42.Trim('|');
+			regex_42 += ")";
+
+			var regex_31 = "(";
+			foreach (var rule in expanded_31)
+			{
+				regex_31 += "(";
+				foreach (char c in rule) regex_31 += "[" + c + "]";
+				regex_31 += ")|";
+			}
+			regex_31 = regex_31.Trim('|');
+			regex_31 += ")";
+
+			var regex_full = "^" + regex_42 + "{2,}" + regex_31 + "+$";
+
+			//rules[8] = "42 | 42 8"; //8 = 42 repeated ANY number of times (e.g. "a | aa | aaa | ... | aaaaaaaaaaaa...")
+			//rules[11] = "42 31 | 41 11 31"; //11 = 42 and 32 repeated any EQUAL number of times (e.g. "ab | aabb | aaabbb | ... | ...aaaaaaaaaabbbbbbbbbb...")
+
+			int matchCount = 0;
+
+			foreach (var message in unmatched)
+			{
+				var matches = Regex.Matches(message, regex_full);
+				if (matches.Count > 0)
+				{
+					var groups = matches[0].Groups;
+
+					//for (int i = 0; i < groups.Count; i++) if (groups[i].Value != "") Console.WriteLine(i + ": " + groups[i].Value);
+
+					int count_42 = 0;
+					for (int i = 2; i < expanded_42.Count() + 2; i++)
+					{
+						count_42 += groups[i].Value != "" ? 1 : 0;
+					}
+
+					int count_31 = 0;
+					for (int i = expanded_42.Count() + 3; i < groups.Count; i++)
+					{
+						count_31 += groups[i].Value != "" ? 1 : 0;
+					}
+
+					matchCount += count_42 > count_31 ? 1 : 0;
+				}
+			}
+
+			matchCount++; // nothing to see here ...
+
+			Console.WriteLine("Part 2: " + (successCount_Part1 + matchCount).ToString());
+		}
+
+		#region Day 19 Helpers
+		/// <summary>
+		/// This returns a list of strings which are all "OR" options for the rule that was given to it
+		/// </summary>
+		/// <param name="ruleDict"></param>
+		/// <param name="baseRule"></param>
+		/// <returns></returns>
+		private List<string> expandRule(ref Dictionary<int, string> ruleDict, int ruleNum)
+		{
+			var newList = new List<string>();
+			string rule = ruleDict[ruleNum];
+			rule = rule.Replace("\"", "");
+
+			//terminal case: if a rule has no numbers in it, just return it.
+			if (Regex.Match(rule, "^[a-zA-Z]$").Success)
+			{
+				newList.Add(rule);
+				return newList;
+			}
+
+			var splitRules = rule.Split('|'); //split the rule at the |'s.  We will then return a list with each of these fully expanded
+
+
+			//go through each item in our current list of rules, and for each one, expand it and add the expansion to newList
+			foreach (var splitRule in splitRules)
+			{
+				var trimmed = splitRule.Trim();
+				var returnedLists = new List<List<string>>(); //a list of the lists returned by each character in this part of the original rule
+				var indexList = new List<int>();
+
+				var individualRules = trimmed.Split(' ');
+
+				foreach (var r in individualRules)
+				{
+					//for each part of this rule, it will return a list of OR's which could each work for it
+					//We will then find all combinations of these rules, and create a new list from them.  This is what we'll return
+					int parsed;
+					bool success = int.TryParse(r, out parsed);
+					if (success) returnedLists.Add(expandRule(ref ruleDict, parsed));
+					else returnedLists.Add(new List<string>{r});
+					indexList.Add(0);
+				}
+
+				//now we've got a list of all the "OR" lists for this part of the original rule
+				//generate all valid combinations of these now, and add to a master list
+				//we will generate these combinations for each of the set of lists returned for each part of the rule, and add them all to the same master list
+				bool allGenerated = false;
+				while (!allGenerated)
+				{
+					//generate permutation
+					var newComb = "";
+					for (int i = 0; i < returnedLists.Count(); i++)
+					{
+						newComb += returnedLists[i][indexList[i]];
+					}
+					newList.Add(newComb);
+
+					//increment necessary indices
+					for (int i = 0; i < indexList.Count(); i++)
+					{
+						indexList[i]++;
+						if (indexList[i] == returnedLists[i].Count())
+						{
+							if (i == indexList.Count() - 1)
+							{
+								allGenerated = true;
+								break;
+							}
+							else indexList[i] = 0;
+						}
+						else break;
+					}
+				}
+			}
+
+			return newList;
+		}
+		#endregion
+
+		private void btnDay20_Click(object sender, EventArgs e)
+		{
+			var input = getInput("input20.txt", new string[] { "\n\n", "\r\n\r\n" });
+			var tileDict = new Dictionary<int, bool[,]>();
+
+			var inputTiles = new List<Tile>();
+
+			foreach (var rawTile in input)
+			{
+				var split = rawTile.Split(new string[] { ":\n" }, StringSplitOptions.None);
+				int ID = int.Parse(split[0].Split(' ')[1]);
+				var tileLines = split[1].Split('\n');
+				var newArr = new bool[tileLines.Length, tileLines[0].Length];
+				for (int r = 0; r <= newArr.GetUpperBound(0); r++)
+				{
+					for (int c = 0; c <= newArr.GetUpperBound(1); c++)
+					{
+						newArr[r, c] = tileLines[r][c] == '#' ? true : false;
+					}
+				}
+
+				inputTiles.Add(new Tile(newArr, ID));
+			}
+
+			//var arr = new bool[12,12];
+
+			//for (int i = 0; i <= 6; i++)
+			//{
+			//	for (int j = 0; j <= 6; j++)
+			//	{
+			//		if ((i + j) % 2 == 0) arr[i, j] = true;
+			//	}
+			//}
+			//printArray(arr);
+			//printArray(rotateArray(arr, 0));
+			//printArray(rotateArray(arr, 1));
+			//printArray(rotateArray(arr, 2));
+
+			var board = new Tile[2, 2];
+			BuildBoard(board, new List<Tile>());
+			Console.WriteLine(board[0, 0].ID);
+		}
+
+		private void printArray(bool[,] arr)
+		{
+			for (int r = 0; r < arr.GetUpperBound(0) + 1; r++)
+			{
+				for (int c = 0; c < arr.GetUpperBound(1) + 1; c++)
+				{
+					Console.Write(arr[r,c] ? "#" : ".");
+				}
+				Console.WriteLine();
+			}
+			Console.WriteLine();
+		}
+		private bool[,] rotateArray(bool[,] arr, int deg)
+		{
+			bool[,] newArr = new bool[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+
+			switch (deg)
+			{
+				case 0: //90 deg CW
+					for (int r = 0; r <= arr.GetUpperBound(0); r++)
+					{
+						for (int c = 0; c <= arr.GetUpperBound(1); c++)
+						{
+							newArr[c, arr.GetUpperBound(1) - r] = arr[r, c];
+						}
+					}
+					break;
+				case 1: //180 deg CW
+					for (int r = 0; r <= arr.GetUpperBound(0); r++)
+					{
+						for (int c = 0; c <= arr.GetUpperBound(1); c++)
+						{
+							newArr[arr.GetUpperBound(0) - r, arr.GetUpperBound(1) - c] = arr[r, c];
+						}
+					}
+					break;
+				case 2: //270 deg CW
+					for (int r = 0; r <= arr.GetUpperBound(0); r++)
+					{
+						for (int c = 0; c <= arr.GetUpperBound(1); c++)
+						{
+							newArr[arr.GetUpperBound(1) - c, r] = arr[r, c];
+						}
+					}
+					break;
+				default:
+					break;
+			}
+
+			return newArr;
+		}
+
+		/// <summary>
+		/// Flip about horizontal axis
+		/// </summary>
+		/// <param name="arr"></param>
+		/// <returns></returns>
+		private bool[,] flipArrayH(bool[,] arr)
+		{
+			var newArr = new bool[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+			for (int r = 0; r <= arr.GetUpperBound(0); r++)
+			{
+				for (int c = 0; c <= arr.GetUpperBound(1); c++)
+				{
+					newArr[arr.GetUpperBound(0) - r, c] = arr[r, c];
+				}
+			}
+			return newArr;
+		}
+
+		/// <summary>
+		/// Flip about vertical axis
+		/// </summary>
+		/// <param name="arr"></param>
+		/// <returns></returns>
+		private bool[,] flipArrayV(bool[,] arr)
+		{
+			var newArr = new bool[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+			for (int r = 0; r <= arr.GetUpperBound(0); r++)
+			{
+				for (int c = 0; c <= arr.GetUpperBound(1); c++)
+				{
+					newArr[r, arr.GetUpperBound(1) - c] = arr[r, c];
+				}
+			}
+			return newArr;
+		}
+
+		public struct Tile
+		{
+			public bool[,] arr;
+			public int ID;
+
+			public Tile(bool[,] a = null, int i = 0)
+			{
+				arr = a;
+				ID = i;
+			}
+		}
+
+		private void BuildBoard(Tile[,] board, int loc, List<Tile> tilesAvailable)
+		{
+			int r = loc / (tilesAvailable[0].arr.GetUpperBound(1) + 1);
+			int c = loc % (tilesAvailable[0].arr.GetUpperBound(1) + 1);
+
+			//Pop first item from available tiles
+			var nextTile = tilesAvailable.First();
+			tilesAvailable.RemoveAt(0);
+
+			//try with no rotation
+			if (validPlace(nextTile, board, new Point(r, c)))
+			{
+				board[r, c] = nextTile;
+				BuildBoard(board, loc++, tilesAvailable);
+				if (board[board.GetUpperBound(0), board.GetUpperBound(1)].arr != null) return;
+				else board[r, c] = new Tile();
+			}
+
+			//now try with each different rotation
+			for (int i = 0; i <= 2; i++)
+			{
+
+			}
+
+			//check if it's valid in board at [r,c]
+			//if so, insert it, then call recursively (incrementing r and c)
+			//if board is full, return
+			//else remove it and try the next rotation
+
+
+		}
+
+		private bool validPlace(Tile test, Tile[,] board, Point loc)
+		{
+			bool upValid = (loc.Y - 1 >= 0) && getRow(board[loc.X, loc.Y - 1], board[loc.X, loc.Y - 1].arr.GetUpperBound(0)) == getRow(test, 0);
+			bool downValid = (loc.Y + 1 <= board.GetUpperBound(0)) && getRow(board[loc.X, loc.Y + 1], 0) == getRow(test, test.arr.GetUpperBound(0));
+			bool leftValid = (loc.X - 1 >= 0) && getCol(board[loc.X - 1, loc.Y], board[loc.X - 1, loc.Y].arr.GetUpperBound(1)) == getCol(test, 0);
+			bool rightValid = (loc.X + 1 <= board.GetUpperBound(1)) && getCol(board[loc.X - 1, loc.Y], 0) == getCol(test, test.arr.GetUpperBound(1));
+
+			return upValid && downValid && leftValid && rightValid;
+		}
+
+		private string getRow(Tile t, int r)
+		{
+			string str = "";
+			for (int c = 0; c < t.arr.GetUpperBound(1); c++)
+			{
+				str += t.arr[r, c] ? '#' : '.';
+			}
+			return str;
+		}
+
+		private string getCol(Tile t, int c)
+		{
+			string str = "";
+			for (int r = 0; r < t.arr.GetUpperBound(0); r++)
+			{
+				str += t.arr[r, c] ? '#' : '.';
+			}
+			return str;
+		}
+
 	}
+
+	
 
 
 	#region Passport Stuff (Day 4)
