@@ -2123,8 +2123,9 @@ namespace AdventOfCode2020
 		private void btnDay20_Click(object sender, EventArgs e)
 		{
 			var input = getInput("input20.txt", new string[] { "\n\n", "\r\n\r\n" });
-			var tileDict = new Dictionary<int, bool[,]>();
 
+
+			//Part 1:
 			var inputTiles = new List<Tile>();
 
 			foreach (var rawTile in input)
@@ -2132,38 +2133,11 @@ namespace AdventOfCode2020
 				var split = rawTile.Split(new string[] { ":\n", ":\r\n" }, StringSplitOptions.None);
 				int ID = int.Parse(split[0].Split(' ')[1]);
 				var tileLines = split[1].Split(new string[] { "\n", "\r\n" }, StringSplitOptions.None);
-				//var newArr = new bool[tileLines.Length, tileLines[0].Length];
-				//for (int r = 0; r <= newArr.GetUpperBound(0); r++)
-				//{
-				//	for (int c = 0; c <= newArr.GetUpperBound(1); c++)
-				//	{
-				//		newArr[r, c] = tileLines[r][c] == '#' ? true : false;
-				//	}
-				//}
-
 				inputTiles.Add(new Tile(tileLines, ID));
 			}
 
-			//var arr = new bool[12,12];
-
-			//for (int i = 0; i <= 6; i++)
-			//{
-			//	for (int j = 0; j <= 6; j++)
-			//	{
-			//		if ((i + j) % 2 == 0) arr[i, j] = true;
-			//	}
-			//}
-			//printArray(arr);
-			//printArray(rotateArray(arr, 0));
-			//printArray(rotateArray(arr, 1));
-			//printArray(rotateArray(arr, 2));
-
-			//var col1 = getCol(inputTiles[0], 9);
-			//var col2 = getCol(inputTiles[1], 0);
-
-			//if (col1 == col2) Console.WriteLine("match");
-
-			int boardSize = Convert.ToInt32(Math.Sqrt(inputTiles.Count()));
+			int boardSize = Convert.ToInt32(Math.Sqrt(inputTiles.Count())); //assuming square
+			int tileSize = inputTiles[0].arr.GetUpperBound(1) + 1; //assuming square
 
 			var board = new Tile[boardSize, boardSize];
 			BuildBoard(board, 0, inputTiles);
@@ -2172,103 +2146,118 @@ namespace AdventOfCode2020
 			ulong ur = (ulong)board[0, board.GetUpperBound(1)].ID;
 			ulong bl = (ulong)board[board.GetUpperBound(0), 0].ID;
 			ulong br = (ulong)board[board.GetUpperBound(0), board.GetUpperBound(1)].ID;
-
-
 			ulong prod = ul * ur * bl * br;
 				
-
 			Console.WriteLine("Part 1: " + prod);
+
+
+			//Part 2:
+
+			//create sing array from board
+			int pictureSize = (tileSize - 2) * boardSize; //assuming square
+			var picture = new char[pictureSize, pictureSize];
+			for (int r = 0; r < pictureSize; r++)
+			{
+				int boardRow = (r / (tileSize - 2)); //which row of the board we're drawing from
+				int pixelRow = (r % (tileSize - 2)) + 1; //start at index 1 of the tiles, end at last-1
+				for (int c = 0; c < pictureSize; c++)
+				{
+					int boardCol = (c / (tileSize - 2)); //which row of the board we're drawing from
+					int pixelCol = (c % (tileSize - 2)) + 1; //start at index 1 of the tiles, end at last-1
+
+					picture[r, c] = board[boardRow, boardCol].arr[pixelRow, pixelCol];
+				}
+			}
+
+			var template = new char[,] 
+			{
+				{' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' '},
+				{'#',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#',' ',' ',' ',' ','#','#','#'},
+				{' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ','#',' ',' ',' '}
+			};
+
+			int templateWidth = template.GetUpperBound(1) + 1;
+			int templateHeight = template.GetUpperBound(0) + 1;
+
+			//var pictureSub = new char[pictureSize, pictureSize];
+			//for (int r = 0; r < pictureSize; r++)
+			//{
+			//	for (int c = 0; c < pictureSize; c++)
+			//	{
+			//		pictureSub[r, c] = picture[r, c];
+			//	}
+			//}
+			//Array.Copy(picture, pictureSub, pictureSize * pictureSize);
+			int monsterCount = 0;
+			int rotateCount = 0;
+
+			bool match = false;
+			//roll template over the picture and check for a match
+			while (monsterCount == 0)
+			{
+				for (int y = 0; y <= (pictureSize - templateHeight); y++)
+				{
+					for (int x = 0; x <= (pictureSize - templateWidth); x++)
+					{
+						var pictureBackup = new char[pictureSize, pictureSize];
+						Array.Copy(picture, pictureBackup, pictureSize * pictureSize);
+
+						for (int r = 0; r < templateHeight; r++)
+						{
+							for (int c = 0; c < templateWidth; c++)
+							{
+								match = template[r, c] == ' ' || template[r, c] == picture[y + r, x + c];
+								if (match)
+								{
+									if (template[r, c] == '#') picture[y + r, x + c] = 'O';
+								}
+								else
+								{
+									Array.Copy(pictureBackup, picture, pictureSize * pictureSize);
+									break;
+								}
+							}
+							if (!match) break;
+						}
+						if (match)
+						{
+							monsterCount++;
+						}
+					}
+				}
+
+				if (monsterCount == 0)
+				{
+					picture = rotateCW(picture);
+					rotateCount++;
+					if (rotateCount == 4) picture = flipH(picture);
+				}
+			}
+
+			int pictureWater = 0;
+			for (int r = 0; r < pictureSize; r++)
+			{
+				for (int c = 0; c < pictureSize; c++)
+				{
+					if (picture[r, c] == '#') pictureWater++;
+				}
+			}
+
+			Console.WriteLine("Part 2: " + pictureWater);
 		}
 
-		private void printArray(bool[,] arr)
+		private void printArray(char[,] arr)
 		{
 			for (int r = 0; r < arr.GetUpperBound(0) + 1; r++)
 			{
 				for (int c = 0; c < arr.GetUpperBound(1) + 1; c++)
 				{
-					Console.Write(arr[r,c] ? "#" : ".");
+					Console.Write(arr[r,c]);
 				}
 				Console.WriteLine();
 			}
 			Console.WriteLine();
 		}
-		private bool[,] rotateArray(bool[,] arr, int deg)
-		{
-			bool[,] newArr = new bool[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
-
-			switch (deg)
-			{
-				case 0: //90 deg CW
-					for (int r = 0; r <= arr.GetUpperBound(0); r++)
-					{
-						for (int c = 0; c <= arr.GetUpperBound(1); c++)
-						{
-							newArr[c, arr.GetUpperBound(1) - r] = arr[r, c];
-						}
-					}
-					break;
-				case 1: //180 deg CW
-					for (int r = 0; r <= arr.GetUpperBound(0); r++)
-					{
-						for (int c = 0; c <= arr.GetUpperBound(1); c++)
-						{
-							newArr[arr.GetUpperBound(0) - r, arr.GetUpperBound(1) - c] = arr[r, c];
-						}
-					}
-					break;
-				case 2: //270 deg CW
-					for (int r = 0; r <= arr.GetUpperBound(0); r++)
-					{
-						for (int c = 0; c <= arr.GetUpperBound(1); c++)
-						{
-							newArr[arr.GetUpperBound(1) - c, r] = arr[r, c];
-						}
-					}
-					break;
-				default:
-					break;
-			}
-
-			return newArr;
-		}
-
-		/// <summary>
-		/// Flip about horizontal axis
-		/// </summary>
-		/// <param name="arr"></param>
-		/// <returns></returns>
-		private bool[,] flipArrayH(bool[,] arr)
-		{
-			var newArr = new bool[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
-			for (int r = 0; r <= arr.GetUpperBound(0); r++)
-			{
-				for (int c = 0; c <= arr.GetUpperBound(1); c++)
-				{
-					newArr[arr.GetUpperBound(0) - r, c] = arr[r, c];
-				}
-			}
-			return newArr;
-		}
-
-		/// <summary>
-		/// Flip about vertical axis
-		/// </summary>
-		/// <param name="arr"></param>
-		/// <returns></returns>
-		private bool[,] flipArrayV(bool[,] arr)
-		{
-			var newArr = new bool[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
-			for (int r = 0; r <= arr.GetUpperBound(0); r++)
-			{
-				for (int c = 0; c <= arr.GetUpperBound(1); c++)
-				{
-					newArr[r, arr.GetUpperBound(1) - c] = arr[r, c];
-				}
-			}
-			return newArr;
-		}
-
-		
 
 		private void BuildBoard(Tile[,] board, int loc, List<Tile> tilesAvailable)
 		{
@@ -2287,8 +2276,6 @@ namespace AdventOfCode2020
 				//Pop first item from available tiles
 				var nextTile = tilesAvailable.ElementAt(0);
 				tilesAvailable.RemoveAt(0);
-				//Console.WriteLine("Original:");
-				//printArray(nextTile.arr);
 
 				//now try with each different rotation
 				for (int i = 0; i < 4; i++)
@@ -2302,14 +2289,10 @@ namespace AdventOfCode2020
 					}
 				
 					nextTile.rotateCW(); //rotate 90 CW
-					//Console.WriteLine("CW 90:");
-					//printArray(nextTile.arr);
 				}
 
 				//now flip horizontal
 				nextTile.flipH();
-				//Console.WriteLine("Filp H:");
-				//printArray(nextTile.arr);
 
 				//now try all rotations again
 				for (int i = 0; i < 4; i++)
@@ -2322,39 +2305,10 @@ namespace AdventOfCode2020
 						else board[r, c] = null; //remove the tile we just placed
 					}
 					nextTile.rotateCW(); //rotate 90 CW
-					//Console.WriteLine("CW 90:");
-					//printArray(nextTile.arr);
 				}
 
 				//now flip back
 				nextTile.flipH();
-				//Console.WriteLine("Flip H:");
-				//printArray(nextTile.arr);
-
-				//now flip vertical
-				nextTile.flipV();
-				//Console.WriteLine("Flip V:");
-				//printArray(nextTile.arr);
-
-				//now try all rotations again
-				for (int i = 0; i < 4; i++)
-				{
-					if (validPlace(nextTile, board, new Point(c, r)))
-					{
-						board[r, c] = nextTile;
-						BuildBoard(board, loc+1, tilesAvailable);
-						if (board[board.GetUpperBound(0), board.GetUpperBound(1)] != null) return;
-						else board[r, c] = null; //remove the tile we just placed
-					}
-					nextTile.rotateCW(); //rotate 90 CW
-					//Console.WriteLine("CW 90:");
-					//printArray(nextTile.arr);
-				}
-
-				//now flip back
-				nextTile.flipV();
-				//Console.WriteLine("Flip V:");
-				//printArray(nextTile.arr);
 
 				//now add back to tile list
 				tilesAvailable.Add(nextTile);
@@ -2363,126 +2317,146 @@ namespace AdventOfCode2020
 
 		private bool validPlace(Tile test, Tile[,] board, Point loc)
 		{
-			//bool upValid = 
-			//	loc.Y - 1 < 0 || 
-			//	board[loc.Y - 1, loc.X].arr == null ||
-			//	getRow(board[loc.Y - 1, loc.X], board[loc.Y - 1, loc.X].arr.GetUpperBound(0)) == getRow(test, 0);
-
-			//bool downValid = 
-			//	loc.Y + 1 > board.GetUpperBound(0) || 
-			//	board[loc.Y + 1, loc.X].arr == null || 
-			//	getRow(board[loc.Y + 1, loc.X], 0) == getRow(test, test.arr.GetUpperBound(0));
-
-			//bool leftValid = 
-			//	loc.X - 1 < 0 ||
-			//	board[loc.Y, loc.X - 1].arr == null ||
-			//	getCol(board[loc.Y, loc.X - 1], board[loc.Y, loc.X - 1].arr.GetUpperBound(1)) == getCol(test, 0);
-
-			//bool rightValid = 
-			//	loc.X + 1 > board.GetUpperBound(1) ||
-			//	board[loc.Y, loc.X + 1].arr == null ||
-			//	getCol(board[loc.Y, loc.X + 1], 0) == getCol(test, test.arr.GetUpperBound(1));
-
 			bool upValid =
 				loc.Y - 1 < 0 ||
 				board[loc.Y - 1, loc.X] == null ||
-				board[loc.Y - 1, loc.X].bot == test.top;
+				board[loc.Y - 1, loc.X].getBot() == test.getTop();
 
 			bool downValid =
 				loc.Y + 1 > board.GetUpperBound(0) ||
 				board[loc.Y + 1, loc.X] == null ||
-				board[loc.Y + 1, loc.X].top == test.bot;
+				board[loc.Y + 1, loc.X].getTop() == test.getBot();
 
 			bool leftValid =
 				loc.X - 1 < 0 ||
 				board[loc.Y, loc.X - 1] == null ||
-				board[loc.Y, loc.X - 1].rig == test.lef;
+				board[loc.Y, loc.X - 1].getRight() == test.getLeft();
 
 			bool rightValid =
 				loc.X + 1 > board.GetUpperBound(1) ||
 				board[loc.Y, loc.X + 1] == null ||
-				board[loc.Y, loc.X + 1].lef == test.rig;
+				board[loc.Y, loc.X + 1].getLeft() == test.getRight();
+
+			//bool upValid =
+			//	loc.Y - 1 < 0 ||
+			//	board[loc.Y - 1, loc.X] == null ||
+			//	board[loc.Y - 1, loc.X].bot == test.top;
+
+			//bool downValid =
+			//	loc.Y + 1 > board.GetUpperBound(0) ||
+			//	board[loc.Y + 1, loc.X] == null ||
+			//	board[loc.Y + 1, loc.X].top == test.bot;
+
+			//bool leftValid =
+			//	loc.X - 1 < 0 ||
+			//	board[loc.Y, loc.X - 1] == null ||
+			//	board[loc.Y, loc.X - 1].rig == test.lef;
+
+			//bool rightValid =
+			//	loc.X + 1 > board.GetUpperBound(1) ||
+			//	board[loc.Y, loc.X + 1] == null ||
+			//	board[loc.Y, loc.X + 1].lef == test.rig;
 
 			return upValid && downValid && leftValid && rightValid;
 		}
 
-		
+		public char[,] flipH(char[,] arr)
+		{
+			var newArr = new char[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+			for (int r = 0; r <= arr.GetUpperBound(0); r++)
+			{
+				for (int c = 0; c <= arr.GetUpperBound(1); c++)
+				{
+					newArr[arr.GetUpperBound(0) - r, c] = arr[r, c];
+				}
+			}
+			return newArr;
+		}
 
+		public char[,] rotateCW(char[,] arr)
+		{
+			char[,] newArr = new char[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+			for (int r = 0; r <= arr.GetUpperBound(0); r++)
+			{
+				for (int c = 0; c <= arr.GetUpperBound(1); c++)
+				{
+					newArr[c, arr.GetUpperBound(1) - r] = arr[r, c];
+				}
+			}
+
+			return newArr;
+		}
 	}
 
 	public class Tile
 	{
-		//public bool[,] arr;
+		public char[,] arr;
 		public int ID;
 
-		public string top;
-		public string bot;
-		public string lef;
-		public string rig;
-
-		//public Tile(bool[,] a = null, int i = 0)
-		//{
-		//	arr = a;
-		//	ID = i;
-		//}
-
-		public Tile(string[] data, int id)
+		public Tile(string[] stringArray = null, int i = 0)
 		{
-			ID = id;
-			top = data.First();
-			bot = data.Last();
-			lef = "";
-			rig = "";
-			foreach (var line in data)
+			arr = new char[stringArray.Length, stringArray[0].Length];
+			for (int r = 0; r < stringArray.Length; r++)
 			{
-				lef += line.First();
-				rig += line.Last();
+				var str = stringArray[r];
+				for (int c = 0; c < str.Length; c++) arr[r, c] = str[c];
 			}
+			ID = i;
 		}
 
 		public void rotateCW()
 		{
-			string topOld = top;
-			string botOld = bot;
-			string lefOld = lef;
-			string rigOld = rig;
+			char[,] newArr = new char[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+			for (int r = 0; r <= arr.GetUpperBound(0); r++)
+			{
+				for (int c = 0; c <= arr.GetUpperBound(1); c++)
+				{
+					newArr[c, arr.GetUpperBound(1) - r] = arr[r, c];
+				}
+			}
 
-			rig = topOld;
-			bot = "";
-			for (int i = rigOld.Length - 1; i >= 0; i--) bot += rigOld[i];
-			lef = botOld;
-			top = "";
-			for (int i = lefOld.Length - 1; i >= 0; i--) top += lefOld[i];
+			arr = newArr;
 		}
 
 		public void flipH()
 		{
-			string topOld = top;
-			string botOld = bot;
-			string lefOld = lef;
-			string rigOld = rig;
-
-			top = botOld;
-			bot = topOld;
-			lef = "";
-			for (int i = lefOld.Length - 1; i >= 0; i--) lef += lefOld[i];
-			rig = "";
-			for (int i = rigOld.Length - 1; i >= 0; i--) rig += rigOld[i];
+			var newArr = new char[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+			for (int r = 0; r <= arr.GetUpperBound(0); r++)
+			{
+				for (int c = 0; c <= arr.GetUpperBound(1); c++)
+				{
+					newArr[arr.GetUpperBound(0) - r, c] = arr[r, c];
+				}
+			}
+			arr = newArr;
 		}
 
-		public void flipV()
+		public string getTop()
 		{
-			string topOld = top;
-			string botOld = bot;
-			string lefOld = lef;
-			string rigOld = rig;
+			string top = "";
+			for (int i = 0; i <= arr.GetUpperBound(1); i++) top += arr[0, i];
+			return top;
+		}
 
-			lef = rigOld;
-			rig = lefOld;
-			top = "";
-			for (int i = topOld.Length - 1; i >= 0; i--) top += topOld[i];
-			bot = "";
-			for (int i = botOld.Length - 1; i >= 0; i--) bot += botOld[i];
+		public string getBot()
+		{
+			string bot = "";
+			for (int i = 0; i <= arr.GetUpperBound(1); i++) bot += arr[arr.GetUpperBound(0), i];
+			return bot;
+		}
+
+		public string getLeft()
+		{
+			string left = "";
+			for (int i = 0; i <= arr.GetUpperBound(0); i++) left += arr[i, 0];
+			return left;
+		}
+
+		public string getRight()
+		{
+			string right = "";
+			for (int i = 0; i <= arr.GetUpperBound(0); i++) right += arr[i, arr.GetUpperBound(1)];
+			return right;
 		}
 	}
 
