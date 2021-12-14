@@ -5,7 +5,15 @@ with open('21_input.txt') as f:
 	lines = [n.strip() for n in f.readlines()]
 
 def part1(lines):
-	pass
+	recipes = []
+	for line in lines:
+		s = line.split(' (contains')
+		a = s[0].strip().split(' ')
+		b = s[1].strip().split(', ')[:-1]
+		newRecipe = (a, b)
+		recipes.append(newRecipe)
+
+	
 
 def part2(lines):
 	pass
